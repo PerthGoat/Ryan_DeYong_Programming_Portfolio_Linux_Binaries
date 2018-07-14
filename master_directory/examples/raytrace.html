@@ -20,8 +20,8 @@
 	<script type='text/javascript' src='js/ray_tracer.js'></script>
     Check the checkbox to show the code. <input type='checkbox'>
 <div id='code'>
-trace.ts<br>
-<pre class='h_code'>/// <reference path='trace_gfx.ts'/>
+<pre class='h_code'>// trace.ts
+/// <reference path='trace_gfx.ts'/>
 /// <reference path='3d_prim.ts'/>
 /// <reference path='math_3d.ts'/>
 /// <reference path='lighting.ts'/>
@@ -64,9 +64,9 @@ for(let x : number = -g.w / 2;x < g.w / 2;x++) {
 }
 
 g.showBuffer();
-//console.log(g.w);</pre><br>
-trace_gfx.ts<br>
-<pre class='h_code'>/*
+//console.log(g.w);</pre>
+<pre class='h_code'>// trace_gfx.ts
+/*
 * General purpose graphics library
 */
 
@@ -130,9 +130,10 @@ class Graphics {
 		
 		this.ctx.putImageData(this.imageData, 0, 0);
 	}
-}</pre><br>
-math_3d.ts<br>
-<pre class='h_code'>/// <reference path='trace_gfx.ts'/>
+}</pre>
+
+<pre class='h_code'>// math_3d.ts
+/// <reference path='trace_gfx.ts'/>
 /// <reference path='3d_prim.ts'/>
 
 /*
@@ -301,9 +302,9 @@ class Math_3D {
 		
 		return {sphere: sphere, distance: distance, hit_point: undefined, hit_normal: undefined};
 	}
-}</pre><br>
-lighting.ts<br>
-<pre class='h_code'>/// <reference path='trace_gfx.ts'/>
+}</pre>
+<pre class='h_code'>// lighting.ts
+/// <reference path='trace_gfx.ts'/>
 /// <reference path='math_3d.ts'/>
 
 /*
@@ -379,9 +380,9 @@ class Lighting {
 		
 		return i;
 	}
-}</pre><br>
-3d_prim.ts<br>
-<pre class='h_code'>/// <reference path='trace_gfx.ts'/>
+}</pre>
+<pre class='h_code'>// 3d_prim.ts
+/// <reference path='trace_gfx.ts'/>
 
 /*
 * Holds 3D object primitives
