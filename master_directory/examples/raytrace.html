@@ -19,7 +19,387 @@
 	<canvas id='drawCanvas'></canvas><br>
 	<script type='text/javascript' src='js/ray_tracer.js'></script>
     Check the checkbox to show the code. <input type='checkbox'>
-<div id='code'><pre class='h_code'></pre></div>
+<div id='code'>
+trace.ts<br>
+<pre class='h_code'>/// <reference path='trace_gfx.ts'/>
+/// <reference path='3d_prim.ts'/>
+/// <reference path='math_3d.ts'/>
+/// <reference path='lighting.ts'/>
+
+// create the graphics context
+let canvas : any = document.getElementById("drawCanvas");
+
+let g : Graphics = new Graphics(canvas, 1024, 1024);
+
+// define the spheres
+let sphereArray : Sphere[] = [
+new Sphere(new Vector3(0, 1, 3), 1, new Vector3(255, 0, 0), 500),
+new Sphere(new Vector3(2, 0, 6), 1, new Vector3(0, 0, 255), 500),
+new Sphere(new Vector3(-2, 0, 4), 1, new Vector3(0, 255, 0), 10),
+new Sphere(new Vector3(0, -5001, 0), 5000, new Vector3(255, 255, 0), 1000),
+];
+
+// define the scene lights
+let lightArray : Light[] = [
+new Light(LIGHT_TYPE.AMBIENT, 0.2),
+new Light(LIGHT_TYPE.POINT, 0.6, new Vector3(2, 1, 0)),
+new Light(LIGHT_TYPE.DIRECTIONAL, 0.2, undefined, new Vector3(1, 4, 4))
+];
+
+// define camera pos and other stuff
+let camera : Vector3 = new Vector3(0, 0, 0); // camera is at the origin
+
+for(let x : number = -g.w / 2;x < g.w / 2;x++) {
+	for(let y : number = -g.h / 2;y < g.h / 2;y++) {
+		let hit : Ray_Result = Math_3D.IntersectAllSpheres(camera, new Vector3(x / g.w, -y / g.h, 1), sphereArray);
+		if(hit.sphere != undefined) {
+			let ray_dir = Math_3D.UnitVector(new Vector3(x / g.w, -y / g.h, 1));
+			let light_index : number = Lighting.CalcLighting(hit.hit_point, hit.hit_normal, new Vector3(-ray_dir.x, -ray_dir.y, -ray_dir.z), lightArray, hit.sphere.specular, sphereArray);
+			g.putPixel(new Vector2(x + g.w / 2, y + g.w / 2), new Vector3(hit.sphere.color.x * light_index, hit.sphere.color.y * light_index, hit.sphere.color.z * light_index));
+		} else {
+			g.putPixel(new Vector2(x + g.w / 2, y + g.w / 2), new Vector3(255, 255, 255));
+		}
+		//console.log();
+	}
+}
+
+g.showBuffer();
+//console.log(g.w);</pre><br>
+trace_gfx.ts<br>
+<pre class='h_code'>/*
+* General purpose graphics library
+*/
+
+/*
+* Structure to hold a 2D vector
+*/
+class Vector2 {
+	constructor(
+		public x : number,
+		public y : number
+	) {}
+}
+
+/*
+* Structure to hold a 3D vector
+*/
+class Vector3 {
+	constructor(
+		public x : number,
+		public y : number,
+		public z : number
+	) {}
+}
+
+/*
+* Class that controls graphical output
+*/
+class Graphics {
+	private ctx : any;
+	private buf8 : any;
+	private imageData : any;
+	
+	constructor(canvas : any, public w : number, public h : number) {
+		canvas.width = w;
+		canvas.height = h;
+		this.ctx = canvas.getContext("2d");
+		this.imageData = this.ctx.getImageData(0, 0, w, h); // get the image data in the canvas
+		
+		// now put the bytes into an off-screen buffer
+		let buf : any = new ArrayBuffer(this.imageData.data.length);
+		this.buf8 = new Uint8ClampedArray(buf);
+	}
+	
+	/*
+	* Put a pixel into our int buffer
+	*/
+	putPixel(pos : Vector2, color : Vector3) : void {
+		let offset : number = (pos.y * this.w + pos.x) * 4; // offset for pixels, 32-bit RGBA
+		
+		this.buf8[offset + 3] = 255; // alpha
+		this.buf8[offset] = color.x; // red
+		this.buf8[offset + 1] = color.y; // green
+		this.buf8[offset + 2] = color.z; // blue
+	}
+	
+	/*
+	* Show the graphics buffer after drawing
+	*/
+	showBuffer() : void {
+		this.imageData.data.set(this.buf8);
+		
+		this.ctx.putImageData(this.imageData, 0, 0);
+	}
+}</pre><br>
+math_3d.ts<br>
+<pre class='h_code'>/// <reference path='trace_gfx.ts'/>
+/// <reference path='3d_prim.ts'/>
+
+/*
+* Holds the functions for doing 3D math
+*/
+
+interface Ray_Result {
+	sphere : Sphere;
+	distance : number;
+	hit_point : Vector3;
+	hit_normal : Vector3;
+}
+
+class Math_3D {
+	
+	/*
+	* Add 2 3D vectors
+	* Returns a Vector3 result
+	*/
+	public static AddVectors(V1 : Vector3, V2 : Vector3) : Vector3 {
+		let a1 : number[] = [V1.x, V1.y, V1.z];
+		let a2 : number[] = [V2.x, V2.y, V2.z];
+		
+		let result : number[] = a1.map(function(item, index) {
+			return item + a2[index];
+		});
+		
+		return new Vector3(result[0], result[1], result[2]);
+	}
+	
+	/*
+	* Subtract 2 3D vectors
+	* Returns a Vector3 result
+	*/
+	public static SubtractVectors(V1 : Vector3, V2 : Vector3) : Vector3 {
+		let a1 : number[] = [V1.x, V1.y, V1.z];
+		let a2 : number[] = [V2.x, V2.y, V2.z];
+		
+		let result : number[] = a1.map(function(item, index) {
+			return item - a2[index];
+		});
+		
+		return new Vector3(result[0], result[1], result[2]);
+	}
+	
+	/*
+	* Gets the dot product of 2 3D vectors
+	* Returns a scalar result
+	*/
+	public static DotProduct(V1 : Vector3, V2 : Vector3) : number {
+		return V1.x * V2.x + V1.y * V2.y + V1.z * V2.z;
+	}
+	
+	/*
+	* Gets the cross product of 2 3D vectors
+	* Returns a Vector3 result
+	*/
+	public static CrossProduct(V1 : Vector3, V2 : Vector3) : Vector3 {
+		let cx : number = V1.y * V2.z - V1.z * V2.y;
+		let cy : number = V1.z * V2.x - V1.x * V2.z;
+		let cz : number = V1.x * V2.y - V1.y * V2.x;
+		
+		return new Vector3(cx, cy, cz);
+	}
+	
+	/*
+	* Gets the magnitude of a 3D vector
+	* Returns a scalar result
+	*/
+	public static VectorMagnitude(V : Vector3) : number {
+		return Math.sqrt(V.x * V.x + V.y * V.y + V.z * V.z);
+	}
+	
+	/*
+	* Gets the result of a vector multiplied by a number
+	* Returns a Vector3 result
+	*/
+	public static MultiplyVector(V : Vector3, N : number) : Vector3 {
+		return new Vector3(V.x * N, V.y * N, V.z * N);
+	}
+	
+	/*
+	* Gets the result of a vector divided by a number
+	* Returns a Vector3 result
+	*/
+	public static DivideVector(V : Vector3, N : number) : Vector3 {
+		return new Vector3(V.x / N, V.y / N, V.z / N);
+	}
+	
+	/*
+	* Gets the unit vector that represents a 3D vector
+	* Returns a Vector3 result
+	*/
+	public static UnitVector(V : Vector3) : Vector3 {
+		return Math_3D.DivideVector(V, Math_3D.VectorMagnitude(V));
+	}
+	
+	/*
+	* Returns the absolute value of a vector
+	*/
+	public static AbsVector(V : Vector3) : Vector3 {
+		return new Vector3(Math.abs(V.x), Math.abs(V.y), Math.abs(V.z));
+	}
+	
+	/*
+	* Cast a ray to attempt to intersect with a sphere from start to end
+	*/
+	public static IntersectRaySphere(o : Vector3, lnn : Vector3, sphere : Sphere) : number {
+		
+		let l : Vector3 = Math_3D.UnitVector(lnn); // normalized ray direction
+		
+		let c : Vector3 = sphere.center;
+		let r : number = sphere.radius;
+		
+		// part 1
+		// -(l DOT (o - c))
+		
+		let oc : Vector3 = Math_3D.SubtractVectors(o, c); // o - c
+		let ld : number = Math_3D.DotProduct(l, oc); // l DOT (o - c)
+		
+		let ldn : number = -ld; // -(l DOT (o - c))
+		
+		// part 2
+		// number under radical
+		
+		let lds : number = ld * ld; // ld^2
+		let mag : number = Math_3D.VectorMagnitude(oc); // || o - c ||
+		mag = mag * mag;
+		let result : number = lds - mag + r * r;
+		let sq : number = Math.sqrt(result);
+		
+		let r1 : number = ldn - sq;
+		let r2 : number = ldn + sq;
+		
+		if(r1 < r2) {
+			return r1;
+		} else {
+			return r2;
+		}
+	}
+	
+	/*
+	* Check all passed spheres for collision
+	*/
+	public static IntersectAllSpheres(o : Vector3, lnn : Vector3, sphereArray : Sphere[]) : Ray_Result {
+		let l : Vector3 = Math_3D.UnitVector(lnn); // normalized ray direction
+		
+		// holds ending information
+		let sphere : Sphere = undefined;
+		let distance : number = 999;
+		
+		for(let i : number = 0;i < sphereArray.length;i++) {
+			let t_dist : number = Math_3D.IntersectRaySphere(o, lnn, sphereArray[i]);
+			if(distance > t_dist && t_dist >= 0) {
+				distance = t_dist;
+				sphere = sphereArray[i];
+			}
+		}
+		
+		if(sphere != undefined) {
+			let P : Vector3 = Math_3D.AddVectors(o, Math_3D.MultiplyVector(l, distance)); // compute hit pos
+			let N : Vector3 = Math_3D.SubtractVectors(P, sphere.center) // compute sphere normal
+			let NORM : Vector3 = Math_3D.UnitVector(N); // gets the normalized normal
+			return {sphere: sphere, distance: distance, hit_point: P, hit_normal: NORM};
+		}
+		
+		return {sphere: sphere, distance: distance, hit_point: undefined, hit_normal: undefined};
+	}
+}</pre><br>
+lighting.ts<br>
+<pre class='h_code'>/// <reference path='trace_gfx.ts'/>
+/// <reference path='math_3d.ts'/>
+
+/*
+* Holds lighting information
+*/
+
+/*
+* enum to hold light types
+*/
+
+enum LIGHT_TYPE {
+	AMBIENT,
+	POINT,
+	DIRECTIONAL
+}
+
+/*
+* Structure to hold lights
+*/
+class Light {
+	constructor(
+		public type : LIGHT_TYPE,
+		public intensity : number,
+		public position? : Vector3,
+		public direction? : Vector3
+	) {}
+}
+
+class Lighting {
+	public static CalcLighting(P : Vector3, N : Vector3, V : Vector3, lights : Light[], s : number, sphereArray : Sphere[]) : number {
+		let i : number = 0;
+		for(let l : number = 0;l < lights.length;l++) {
+			let li : Light = lights[l];
+			
+			if(li.type == LIGHT_TYPE.AMBIENT) {
+				i += li.intensity;
+			} else {
+				let L : Vector3 = undefined;
+				
+				if(li.type == LIGHT_TYPE.POINT) {
+					L = Math_3D.SubtractVectors(li.position, P);
+				} else {
+					L = li.direction;
+				}
+				
+				let new_l : Vector3 = Math_3D.AddVectors(L, N);
+				// shadows
+				let hit : Ray_Result = Math_3D.IntersectAllSpheres(P, new_l, sphereArray);
+				if(hit.sphere != undefined) {
+					continue;
+				}
+				
+				// diffuse lighting
+				let n_dot_l : number = Math_3D.DotProduct(N, L);
+				if(n_dot_l > 0) {
+					i += li.intensity * n_dot_l / (Math_3D.VectorMagnitude(N) * Math_3D.VectorMagnitude(L));
+				}
+				
+				// specular lighting
+				if(s != -1) {
+					let R1 : Vector3 = Math_3D.MultiplyVector(N, 2);
+					let R2 : number = Math_3D.DotProduct(N, L);
+					let R3 : Vector3 = Math_3D.MultiplyVector(R1, R2);
+					let R4 : Vector3 = Math_3D.SubtractVectors(R3, L);
+					
+					let r_dot_v : number = Math_3D.DotProduct(R4, V);
+					if(r_dot_v > 0) {
+						i += li.intensity * Math.pow(r_dot_v / (Math_3D.VectorMagnitude(R4) * Math_3D.VectorMagnitude(V)), s);
+					}
+				}
+			}
+		}
+		
+		return i;
+	}
+}</pre><br>
+3d_prim.ts<br>
+<pre class='h_code'>/// <reference path='trace_gfx.ts'/>
+
+/*
+* Holds 3D object primitives
+*/
+
+/*
+* Structure to hold a sphere
+*/
+class Sphere {
+	constructor(
+		public center : Vector3,
+		public radius : number,
+		public color : Vector3,
+		public specular : number
+	) {}
+}</pre><br>
+
+</div>
     %%footer.html%%
 	%%javascript_highlight.html%%
 </html>
