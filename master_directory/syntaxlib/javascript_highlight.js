@@ -3,6 +3,9 @@ var Syntax_Highlighter = /** @class */ (function () {
         this.parseRoutines = routines;
     }
     Syntax_Highlighter.prototype.parseSingleResult = function (s, r, replacement) {
+        if (s.match(r) == null) {
+            return [{ value: s, grouped: false }];
+        }
         var match_len = s.match(r)[0].length;
         var str1 = s.slice(0, s.search(r));
         var str2 = s.slice(s.search(r), s.search(r) + match_len).replace(r, replacement);
@@ -51,7 +54,10 @@ var Syntax_Highlighter = /** @class */ (function () {
             var pre = document.createElement("pre");
             pre.innerHTML = t;
             code_snippets[i].parentNode.appendChild(pre);
-            code_snippets[i].parentNode.removeChild(code_snippets[i]);
+        }
+        var len = code_snippets.length;
+        for (var i = 0; i < len; i++) { // cleanup
+            code_snippets[0].parentNode.removeChild(code_snippets[0]);
         }
     };
     /*

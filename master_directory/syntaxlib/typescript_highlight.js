@@ -54,7 +54,10 @@ var Syntax_Highlighter = /** @class */ (function () {
             var pre = document.createElement("pre");
             pre.innerHTML = t;
             code_snippets[i].parentNode.appendChild(pre);
-            code_snippets[i].parentNode.removeChild(code_snippets[i]);
+        }
+        var len = code_snippets.length;
+        for (var i = 0; i < len; i++) { // cleanup
+            code_snippets[0].parentNode.removeChild(code_snippets[0]);
         }
     };
     /*
