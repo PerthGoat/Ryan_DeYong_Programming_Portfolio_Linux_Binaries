@@ -3,6 +3,9 @@ var Syntax_Highlighter = /** @class */ (function () {
         this.parseRoutines = routines;
     }
     Syntax_Highlighter.prototype.parseSingleResult = function (s, r, replacement) {
+        if (s.match(r) == null) {
+            return [{ value: s, grouped: false }];
+        }
         var match_len = s.match(r)[0].length;
         var str1 = s.slice(0, s.search(r));
         var str2 = s.slice(s.search(r), s.search(r) + match_len).replace(r, replacement);
