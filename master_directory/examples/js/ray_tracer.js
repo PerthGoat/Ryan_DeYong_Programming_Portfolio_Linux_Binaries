@@ -286,10 +286,10 @@ var canvas = document.getElementById("drawCanvas");
 var g = new Graphics(canvas, 256, 256);
 // define the spheres
 var sphereArray = [
-    new Sphere(new Vector3(-4 * Math.random() + 2, 1 * Math.random(), 4 * Math.random() + 1), 1, new Vector3(255, 0, 0), 500),
-    new Sphere(new Vector3(-4 * Math.random() + 2, 1 * Math.random(), 4 * Math.random() + 1), 1, new Vector3(0, 0, 255), 500),
-    new Sphere(new Vector3(-4 * Math.random() + 2, 1 * Math.random(), 4 * Math.random() + 1), 1, new Vector3(0, 255, 0), 10),
-    new Sphere(new Vector3(0, -5001, 0), 5000, new Vector3(255, 255, 0), 1000),
+    new Sphere(new Vector3(-4 * Math.random() + 2, 1 * Math.random(), 4 * Math.random() + 1), 1, new Vector3(255, 255, 0), 500),
+    new Sphere(new Vector3(-4 * Math.random() + 2, 1 * Math.random(), 4 * Math.random() + 1), 1, new Vector3(255, 0, 255), 500),
+    new Sphere(new Vector3(-4 * Math.random() + 2, 1 * Math.random(), 4 * Math.random() + 1), 1, new Vector3(0, 255, 255), 10),
+    new Sphere(new Vector3(0, -5001, 0), 5000, new Vector3(230, 230, 230), 1000),
 ];
 // define the scene lights
 var lightArray = [
