@@ -308,7 +308,7 @@ for (var x = -g.w / 2; x < g.w / 2; x++) {
             g.putPixel(new Vector2(x + g.w / 2, y + g.w / 2), new Vector3(hit.sphere.color.x * light_index, hit.sphere.color.y * light_index, hit.sphere.color.z * light_index));
         }
         else {
-            g.putPixel(new Vector2(x + g.w / 2, y + g.w / 2), new Vector3(255, 255, 255));
+            g.putPixel(new Vector2(x + g.w / 2, y + g.w / 2), new Vector3(0, 0, 255));
         }
         //console.log();
     }
