@@ -24,7 +24,7 @@
 	<input type='button' value='CLEAR' onclick='clear_all()';><br>
 	<script type='text/javascript' src='js/handwriting.js'></script>
     Check the checkbox to show the code. <input type='checkbox'>
-<div id='code'><pre class='h_code'>var canvas = document.getElementById("theCanvas");
+<div id='code'><xmp class='code'>var canvas = document.getElementById("theCanvas");
 
 var ctx = canvas.getContext("2d");
 
@@ -156,7 +156,7 @@ canvas.addEventListener('mousemove', function(e) {
 			y0 = e.clientY;
 		}
 	}
-});</pre></div>
+});</xmp></div>
     %%footer.html%%
 	%%javascript_highlight.html%%
 </html>
