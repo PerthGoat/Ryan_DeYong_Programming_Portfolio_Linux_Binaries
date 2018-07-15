@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 
 <html lang='en'>
-    <head>
-        <style>
-            #code {display:none;}
-            :checked + #code {
-                display: block;
-            }
-			.pixel {width:10px;
-				height:10px;
-				display:inline-block;}
-			#scr {line-height:0px;}
-        </style>
-    </head>
     %%header.html%%
+	
+	<style type='text/css'>
+		#code {display:none;}
+		:checked + #code {
+			display: block;
+		}
+		.pixel {width:10px;
+			height:10px;
+			display:inline-block;}
+		#scr {line-height:0px;}
+	</style>
     <br>
     This is a ray-tracing algorithm in written in TypeScript that draws several spheres with some diffuse lighting and shadows.<br>
 	<canvas id='drawCanvas'></canvas><br>
