@@ -49,9 +49,10 @@ var Syntax_Highlighter = /** @class */ (function () {
     Syntax_Highlighter.prototype.parseAllSnippets = function () {
         var code_snippets = document.getElementsByClassName("code");
         for (var i = 0; i < code_snippets.length; i++) {
-            var t = this.parseAllRoutines(code_snippets[i].innerHTML, this.parseRoutines);
+            var escaped = this.escapeHtml(code_snippets[i].innerHTML);
+            var t = this.parseAllRoutines(escaped, this.parseRoutines);
             var pre = document.createElement("pre");
-            pre.innerHTML = this.escapeHtml(t);
+            pre.innerHTML = t;
             code_snippets[i].parentNode.appendChild(pre);
         }
         var len = code_snippets.length;
@@ -87,7 +88,7 @@ parseRoutines.push({ reg: new RegExp("(else)"), replacement: "<span class='types
 parseRoutines.push({ reg: new RegExp("(undefined)"), replacement: "<span class='typescript_undefined'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(interface)"), replacement: "<span class='typescript_interface'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(enum)"), replacement: "<span class='typescript_enum'>$1</span>" });
-parseRoutines.push({ reg: new RegExp("(\\b(?![A-Za-z])\\d+([.]\\d+)?)"), replacement: "<span class='typescript_number'>$1</span>" });
+parseRoutines.push({ reg: new RegExp("(\\b(?![A-Za-z#])\\d+([.]\\d+)?)"), replacement: "<span class='typescript_number'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(static)"), replacement: "<span class='typescript_static'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(let)"), replacement: "<span class='typescript_variable'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(public)"), replacement: "<span class='typescript_public'>$1</span>" });
