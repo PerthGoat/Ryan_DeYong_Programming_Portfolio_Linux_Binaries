@@ -49,10 +49,9 @@ var Syntax_Highlighter = /** @class */ (function () {
     Syntax_Highlighter.prototype.parseAllSnippets = function () {
         var code_snippets = document.getElementsByClassName("code");
         for (var i = 0; i < code_snippets.length; i++) {
-            var escaped = this.escapeHtml(code_snippets[i].innerHTML);
-            var t = this.parseAllRoutines(escaped, this.parseRoutines);
+            var t = this.parseAllRoutines(code_snippets[i].innerHTML, this.parseRoutines);
             var pre = document.createElement("pre");
-            pre.innerHTML = t;
+            pre.innerHTML = this.escapeHtml(t);
             code_snippets[i].parentNode.appendChild(pre);
         }
         var len = code_snippets.length;
