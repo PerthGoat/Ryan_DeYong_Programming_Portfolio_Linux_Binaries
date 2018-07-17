@@ -87,6 +87,6 @@ parseRoutines.push({ reg: new RegExp("(case)"), replacement: "<span class='javas
 parseRoutines.push({ reg: new RegExp("(break)"), replacement: "<span class='javascript_break'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(function)"), replacement: "<span class='javascript_function'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("\\b(\\d+)(?!;)\\b"), replacement: "<span class='javascript_number'>$1</span>" });
-parseRoutines.push({ reg: new RegExp("( \\d+)"), replacement: "<span class='javascript_number'>$1</span>" });
+parseRoutines.push({ reg: new RegExp(" (-?)(\\d+)"), replacement: "<span> $1</span><span class='javascript_number'>$2</span>" });
 var highlighter = new Syntax_Highlighter(parseRoutines);
 highlighter.parseAllSnippets();
