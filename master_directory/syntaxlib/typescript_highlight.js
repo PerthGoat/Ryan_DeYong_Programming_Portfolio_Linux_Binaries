@@ -97,5 +97,6 @@ parseRoutines.push({ reg: new RegExp("(let)"), replacement: "<span class='typesc
 parseRoutines.push({ reg: new RegExp("(public)"), replacement: "<span class='typescript_public'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(private)"), replacement: "<span class='typescript_private'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(constructor)"), replacement: "<span class='typescript_constructor'>$1</span>" });
+parseRoutines.push({ reg: new RegExp("(new)"), replacement: "<span class='typescript_new'>$1</span>" });
 var highlighter = new Syntax_Highlighter(parseRoutines);
 highlighter.parseAllSnippets();
