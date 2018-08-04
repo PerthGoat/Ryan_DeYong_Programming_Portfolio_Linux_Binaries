@@ -5,7 +5,7 @@
     <br>
     These are userscripts that I wrote to help automate some tedious tasks in Google Chrome.
 	<h3>EBay Shipping Calculator</h3>
-	<div><pre class='h_code'>// ==UserScript==
+	<div><xmp class='code'>// ==UserScript==
 // @name EBay Shipping Calculator
 // @version 1.0
 // @match https://www.ebay.com/*
@@ -26,9 +26,9 @@ for(var i = 0;i < prices.length;i++) {
       console.log("Price is " + price);
     }
   }
-}</pre></div><hr>
+}</xmp></div><hr>
 	<h3>Reddit Downvote Post Clear</h3>
-	<div><pre class='h_code'>// ==UserScript==
+	<div><xmp class='code'>// ==UserScript==
 // @name Reddit Downvote Post Clear
 // @version 1.0
 // @match https://www.reddit.com/*
@@ -42,9 +42,9 @@ for(var i = 0;i < posts.length;i++) {
   if(posts[i].getElementsByClassName('dislikes').length == 3) {
     posts[i].parentElement.removeChild(posts[i]);
   }
-}</pre></div><hr>
+}</xmp></div><hr>
 	<h3>Steam Web Interface Autoscroll Fix</h3>
-	<div><pre class='h_code'>// ==UserScript==
+	<div><xmp class='code'>// ==UserScript==
 // @name Steam Web Chat Autoscroll
 // @version 1.1
 // @match https://steamcommunity.com/chat
@@ -55,7 +55,7 @@ for(var i = 0;i < posts.length;i++) {
 var style = document.createElement('style');
 style.type = 'text/css';
 style.innerHTML = '.chat_dialog_content_inner {position:absolute;};';
-document.getElementsByTagName('head')[0].appendChild(style);</pre></div>
+document.getElementsByTagName('head')[0].appendChild(style);</xmp></div>
     %%footer.html%%
 	%%javascript_highlight.html%%
 </html>
