@@ -81,7 +81,7 @@ parseRoutines.push({ reg: new RegExp("(&#x2F;&#x2F;&#x2F;.*)"), replacement: "<s
 parseRoutines.push({ reg: new RegExp("(&#x2F;&#x2F;.*)"), replacement: "<span class='typescript_comment'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(&#x2F;\\*[^*]*\\*+(?:[^&#x2F;*][^*]*\\*+)*&#x2F;)"), replacement: "<span class='typescript_multi_comment'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(&quot;|&#39;)(.*?)(&quot;|&#39;)"), replacement: "<span class='typescript_string'>$1$2$3</span>" });
-parseRoutines.push({ reg: new RegExp("(number|string|any)"), replacement: "<span class='typescript_type'>$1</span>" });
+parseRoutines.push({ reg: new RegExp("(number|string|any|void)"), replacement: "<span class='typescript_type'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(class)"), replacement: "<span class='typescript_class'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(return)"), replacement: "<span class='typescript_return'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(if)"), replacement: "<span class='typescript_condition'>$1</span>" });
@@ -95,6 +95,7 @@ parseRoutines.push({ reg: new RegExp(" (-?)(\\d+)"), replacement: "<span> $1</sp
 parseRoutines.push({ reg: new RegExp("(static)"), replacement: "<span class='typescript_static'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(let)"), replacement: "<span class='typescript_variable'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(public)"), replacement: "<span class='typescript_public'>$1</span>" });
+parseRoutines.push({ reg: new RegExp("(private)"), replacement: "<span class='typescript_private'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(constructor)"), replacement: "<span class='typescript_constructor'>$1</span>" });
 var highlighter = new Syntax_Highlighter(parseRoutines);
 highlighter.parseAllSnippets();
