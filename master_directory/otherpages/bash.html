@@ -5,10 +5,10 @@
     <br>
     These are some GNU BASH scripts I wrote, they are mainly for fun.
     <h3>Cool Cowsay!</h3>
-    <div><pre class='h_code'>cowsay -f $(shuf -e $(cowsay -l | tail -n +2) -n 1) $(fortune) | lolcat</pre></div>
+    <div><xmp class='code'>cowsay -f $(shuf -e $(cowsay -l | tail -n +2) -n 1) $(fortune) | lolcat</xmp></div>
     <hr>
     <h3>TTA Converter</h3>
-    <div><pre class='h_code'>#!/bin/bash
+    <div><xmp class='code'>#!/bin/bash
 # this script will convert .tta files with matching .cue files into folders full of mp3s
 # usage: ./convert.sh
 
@@ -38,7 +38,7 @@ do
         ffmpeg -i "$flacname.flac" "$flacname.mp3"
         rm "$flacname.flac"
     done
-done</pre></div>
+done</xmp></div>
     %%footer.html%%
-    %%bash_highlight.html%%
+    %%javascript_highlight.html%%
 </html>
