@@ -80,6 +80,7 @@ var parseRoutines = new Array();
 parseRoutines.push({ reg: new RegExp("(&#x2F;&#x2F;&#x2F;.*)"), replacement: "<span class='typescript_reference'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(&#x2F;&#x2F;.*)"), replacement: "<span class='typescript_comment'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(&#x2F;\\*[^*]*\\*+(?:[^&#x2F;*][^*]*\\*+)*&#x2F;)"), replacement: "<span class='typescript_multi_comment'>$1</span>" });
+parseRoutines.push({ reg: new RegExp("(&quot;|&#39;)(.*?)(&quot;|&#39;)"), replacement: "<span class='typescript_string'>$1$2$3</span>" });
 parseRoutines.push({ reg: new RegExp("(number|string|any)"), replacement: "<span class='typescript_type'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(class)"), replacement: "<span class='typescript_class'>$1</span>" });
 parseRoutines.push({ reg: new RegExp("(return)"), replacement: "<span class='typescript_return'>$1</span>" });
