@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<html lang='en'>
+    %%header.html%%
+	
+	<style type='text/css'>
+		#code {display:none;}
+		:checked + #code {
+			display: block;
+		}
+    canvas {border:1px solid black;
+          width:1024px;
+          height:512px;
+          image-rendering:pixelated;}
+	</style>
+    <br>
+    This is an idea I had for a relatively efficient fire effect. It creates a line of "source" fire and propagates it up row-by-row without having to simulate particle physics.<br>
+	<canvas id='can'></canvas><br>
+	<script type='text/javascript' src='js/fire.js'></script>
+    Check the checkbox to show the code. <input type='checkbox'>
+<div id='code'>
+<xmp class='code'>
+var canvas = document.getElementById("can"); 
+var ctx = canvas.getContext("2d");
+
+var width = canvas.width; // get the canvas width
+var height = canvas.height; // get the canvas height
+
+var prop = 6; // propagation factor, higher means the fire goes away faster
+var rand = 6; // random factor, higher means the fire is more random
+
+var imageData = ctx.getImageData(0, 0, width, height); // get a handle to the canvas imagedata
+
+var buf = new ArrayBuffer(imageData.data.length);
+var buf8 = new Uint8ClampedArray(buf); // use that handle to create a buffer we can manipulate
+
+// plot a pixel in the image buffer with full alpha opacity
+// if it's out of bounds on the x axis, i chose to truncate it to save cycles rather than
+// having more if statements to lock it to the left or right
+function putPixel(x, y, r, g, b) {
+  if(x < 0 || x >= width) {
+    return;
+  }
+  var offset = (y * width + x) * 4;
+  buf8[offset + 3] = 255;
+  buf8[offset] = r;
+  buf8[offset + 1] = g;
+  buf8[offset + 2] = b;
+}
+
+// get a single pixel from the image buffer and return the color
+function getPixel(x, y) {
+  var offset = (y * width + x) * 4;
+  return [buf8[offset], buf8[offset + 1], buf8[offset + 2]];
+}
+
+// show the image buffer by writing it to the canvas context
+function showBuffer() {
+  imageData.data.set(buf8);
+  ctx.putImageData(imageData, 0, 0);
+}
+
+// make the entire screen black, we only do this once so we use an inefficient method
+for(var x = 0;x < width;x++) {
+  for(var y = 0;y < height;y++) {
+    putPixel(x, y, 0, 0, 0);
+  }
+}
+
+// put a single white line of pixels at the bottom of the screen to act as a source of the fire
+for(var x = 0;x < width;x++) {
+  putPixel(x, height - 1, 255, 255, 255);
+}
+
+showBuffer(); // display the graphics buffer after the screen is set up
+
+// updates the fire based on the pixel below
+function tickFire() {
+  for(var x = 0;x < width;x++) {
+    for(var y = 1;y < height;y++) {
+      var color = getPixel(x, y); // get the color of the pixel using the getPixel function
+      var modded_color = [color[0] - 1 * prop + Math.random() * rand, color[1] - 2 * prop + Math.random() * rand, color[2] - 9 * prop + Math.random() * rand]; // create a modified color based on the color, a propagation modifier, and a random number for natural look
+      if(modded_color[0] < 0) {modded_color[0] = 0;} // if this color runs out, lock it at 0
+      if(modded_color[1] < 0) {modded_color[1] = 0;} // if this color runs out, lock it at 0
+      if(modded_color[2] < 0) {modded_color[2] = 0;} // etc..
+      
+      putPixel(Math.round(x + (Math.random() * 2 - 1)), y - 1, modded_color[0], modded_color[1], modded_color[2]); // put a pixel one up, either directly above, to the left, or to the right
+      // this randomness makes the flames look nicer
+    }
+  }
+  showBuffer(); // display the graphics buffer after we're done rendering
+}
+
+setInterval(tickFire, 1000 / 30); // try to run tickFire 30 times per second
+</xmp>
+</div>
+  %%footer.html%%
+	%%javascript_highlight.html%%
+</html>
