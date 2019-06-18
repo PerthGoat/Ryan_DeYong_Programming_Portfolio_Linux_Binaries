@@ -13,6 +13,7 @@
           height:512px;
           image-rendering:pixelated;}
 	</style>
+	<div>
     <br>
     This is an idea I had for a relatively efficient fire effect. It creates a line of "source" fire and propagates it up row-by-row without having to simulate particle physics.<br>
 	<canvas id='can' width="256px", height="128px"></canvas><br>
@@ -94,6 +95,7 @@ function tickFire() {
 setInterval(tickFire, 1000 / 30); // try to run tickFire 30 times per second
 </xmp>
 </div>
-  %%footer.html%%
+	</div>
+	%%footer.html%%
 	%%javascript_highlight.html%%
 </html>
