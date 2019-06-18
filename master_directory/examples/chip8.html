@@ -11,6 +11,7 @@
         </style>
     </head>
     %%header.html%%
+	<div>
     <br>
     This is a chip-8 emulator written in JavaScript. It is capable of emulating the entire Chip-8. Included is a random chip-8 program I found on the Internet.<br>
 	<canvas id='canvas' width='64' height='32' style='border:1px solid black;width:256px;height:128px;image-rendering:pixelated;'></canvas><br>
@@ -263,6 +264,7 @@ function emulateCycle()
 	}
 }
 setInterval(emulateCycle, 1000 / 60);</xmp></div>
+	</div>
     %%footer.html%%
 	%%javascript_highlight.html%%
 </html>
