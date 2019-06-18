@@ -10,6 +10,7 @@
         </style>
     </head>
     %%header.html%%
+	<div>
     <br>
     This is a simplistic FORTH interpreter written in JavaScript. It supports word definitions and primitives.<br>
 	<input type='text' id="in" placeholder='forth here'>
@@ -167,6 +168,7 @@ document.getElementById("run").onclick = function() {
     runForth(line);
   }
 }</xmp></div>
+	</div>
     %%footer.html%%
 	%%javascript_highlight.html%%
 </html>
