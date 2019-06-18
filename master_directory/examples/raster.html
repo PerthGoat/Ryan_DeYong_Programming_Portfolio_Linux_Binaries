@@ -12,6 +12,7 @@
         </style>
     </head>
     %%header.html%%
+	<div>
     <br>
     This is a software rasterizer. It can transform 3D shapes onto a 2D screen using 4D vectors. This is a cube shifted back and to the right.<br>
 	<canvas id='canvas' width="512px" height="512px"></canvas><br>
@@ -156,6 +157,7 @@ ctx.lineTo(cube[6][0], cube[6][1]);
 ctx.moveTo(cube[3][0], cube[3][1]);
 ctx.lineTo(cube[7][0], cube[7][1]);
 ctx.stroke();</xmp></div>
+	</div>
     %%footer.html%%
 	%%javascript_highlight.html%%
 </html>
