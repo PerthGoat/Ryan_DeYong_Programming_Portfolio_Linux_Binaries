@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+
+<html lang='en'>
+    <head>
+        <style>
+            #code {display:none;}
+            :checked + #code {
+                display: block;
+            }
+            canvas {border:1px solid black;
+                    background-color:white;}
+            #the_letter {background-color:gray;
+                        display:inline-block;
+                        padding:4px;}
+        </style>
+    </head>
+    %%header.html%%
+    <br>
+    This is an implementation of the LZSS algorithm also known as DEFLATE.<br>
+    Enter text in the top box, and click COMPRESS to compress it into the next box.
+    Click DECOMPRESS to decompress it into the bottom-most textbox.<br>
+    <textarea placeholder='Enter text' id='text_entry'></textarea><br>
+    <button onclick='compressText();'>COMPRESS</button><br>
+    <textarea placeholder='Recommend not pasting text in here' id='compressed_text'></textarea>
+    Compression Ratio: <span id='compression_ratio'></span><br>
+    <button onclick='decompressText();'>DECOMPRESS</button><br>
+    <textarea readonly id='decompressed_text'></textarea><br>
+    <script type='text/javascript' src='js/lzss_ui.js'></script>
+    Check the checkbox to show the code. <input type='checkbox'>
+<div id='code'><xmp class='code'>
+// lzss.ts
+    
+class DEFLATE {
+    private original_input_string : string;
+    private input_string : string; // placeholder variable used for compression of original_input_string
+    private compressed_stream : string; // holds the compressed output in case any other operations are performed on it such as decompression
+    private debug_string : string;
+    private selwin : string; // holds the window selection
+    
+    // constant variables
+    private readonly window_size : number = 4096;
+    
+    constructor(input_params : {IN_STRING : string, IN_COMPRESSED : string}) {
+        this.original_input_string = input_params['IN_STRING'];
+        this.compressed_stream = input_params['IN_COMPRESSED'];
+    }
+    
+    public setInputString(input_string : string) : void {
+        this.original_input_string = input_string;
+    }
+    
+    public setCompressedString(compressed_string : string) : void {
+        this.compressed_stream = compressed_string;
+    }
+    
+    //public setCompressionString(
+    
+    private moveFromInputToWindow() : void {
+        let o : string = this.input_string[0];
+        this.input_string = this.input_string.substring(1, this.input_string.length);
+        
+        this.selwin += o;
+        
+        if(this.selwin.length > this.window_size) {
+            this.selwin = this.selwin.substring(1, this.selwin.length);
+        }
+    }
+    
+    private searchForSimilar() : void {
+        let j : number = 0;
+        let similar : string = this.input_string[j++];
+        while(this.selwin.includes(similar) && j < this.input_string.length) {
+            similar += this.input_string[j++];
+        }
+
+        if(similar.length > 1) {
+            similar = similar.substring(0, similar.length - 1);
+        }
+
+        let offset : number = this.selwin.indexOf(similar);
+        let length : number = similar.length;
+        
+        this.debug_string += similar;
+        
+        if(offset != -1) {
+            let compressed_chunk : string = `[${offset.toString(16)},${length.toString(16)}]`;
+            if(similar.length > compressed_chunk.length) {
+                this.compressed_stream += compressed_chunk;
+            } else {
+                this.compressed_stream += similar;
+            }
+        } else {
+            this.compressed_stream += similar;
+        }
+        
+        for(let i : number = 0;i < length;i++) {
+            this.moveFromInputToWindow();
+        }
+    }
+    
+    public compress() : string {
+        if(this.original_input_string == undefined) {
+            alert("ERROR Input String Undefined");
+            return "ERROR Input String Undefined";
+        }
+        this.input_string = this.original_input_string; // grab the original_input_string since input_string gets consumed during compression
+        this.compressed_stream = "";
+        this.debug_string = "";
+        this.selwin = "";
+        
+        while(this.input_string.length > 0) {
+            this.searchForSimilar();
+        }
+        
+        if(this.debug_string != this.original_input_string) {
+            alert("ERROR Input string does not match compressed stream"); 
+            return "ERROR Input string does not match compressed stream";
+        }
+        
+        return this.compressed_stream;
+    }
+    
+    public decompress() : string {
+        if(this.compressed_stream == undefined) {
+            alert("ERROR compressed stream is undefined");
+            return "ERROR compressed stream is undefined";
+        }
+        let decompressed_stream : string = "";
+        let selwin : string = "";
+        
+        for(let i : number = 0;i < this.compressed_stream.length;i++) {
+            let c : string = this.compressed_stream[i];
+            
+            if(c == "[") {
+                let decoded_compression_token : string = "";
+                
+                while(c != "]") {
+                    c = this.compressed_stream[++i];
+                    if(c != "]") {
+                        decoded_compression_token += c;
+                    }
+                }
+                
+                let decoded_token_pair : string[] = decoded_compression_token.split(",");
+                let offset : number = parseInt(decoded_token_pair[0], 16);
+                let length : number = parseInt(decoded_token_pair[1], 16);
+                
+                let selwin_chunk : string = selwin.substring(offset, offset + length);
+                
+                selwin += selwin_chunk;
+                decompressed_stream += selwin_chunk;
+                
+                while(selwin.length > this.window_size) {
+                    selwin = selwin.substring(1, selwin.length);
+                }
+                
+                continue;
+            }
+            
+            selwin += c;
+            decompressed_stream += c;
+            
+            if(selwin.length > this.window_size) {
+                selwin = selwin.substring(1, selwin.length);
+            }
+        }
+        
+        return decompressed_stream;
+    }
+    
+    // compresses the string, and then converts it to base64 with btoa, and then compresses that base64
+    // sometimes this can achieve even higher compression ratios
+    public doubleCompressBase64() : string {
+        let c1 = this.compress();
+        this.original_input_string = btoa(c1);
+        return this.compress();
+    }
+}
+
+// ui.ts
+
+/// <reference path="lzss.ts" />
+
+function compressText() {
+    let text_entry : string = (<HTMLInputElement>document.getElementById("text_entry")).value;
+    let compressed_string : string = new DEFLATE({IN_STRING : text_entry, IN_COMPRESSED : ""}).compress();
+    (<HTMLInputElement>document.getElementById("compressed_text")).value = compressed_string;
+    if(text_entry.length != 0) {
+        document.getElementById("compression_ratio").innerText = (compressed_string.length / text_entry.length * 100).toPrecision(5) + "%";
+    } else {
+        document.getElementById("compression_ratio").innerText = ""
+    }
+    //console.log(compressed_string);
+}
+
+function decompressText() {
+    let text_entry : string = (<HTMLInputElement>document.getElementById("compressed_text")).value;
+    let decompressed_string : string = new DEFLATE({IN_STRING : "", IN_COMPRESSED : text_entry}).decompress();
+    (<HTMLInputElement>document.getElementById("decompressed_text")).value = decompressed_string;
+}
+</xmp></div>
+    %%footer.html%%
+    %%javascript_highlight.html%%
+</html>
