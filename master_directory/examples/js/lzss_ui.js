@@ -26,7 +26,7 @@ class DEFLATE {
         while (this.selwin.includes(similar) && j < this.input_string.length) {
             similar += this.input_string[j++];
         }
-        if (similar.length > 1 && j < this.input_string.length) {
+        if (similar.length > 1 && !this.selwin.includes(similar)) {
             similar = similar.substring(0, similar.length - 1);
         }
         let offset = this.selwin.indexOf(similar);
