@@ -7,11 +7,6 @@
             :checked + #code {
                 display: block;
             }
-            canvas {border:1px solid black;
-                    background-color:white;}
-            #the_letter {background-color:gray;
-                        display:inline-block;
-                        padding:4px;}
         </style>
     </head>
     %%header.html%%
@@ -25,7 +20,7 @@
     Compression Ratio: <span id='compression_ratio'></span><br>
     <button onclick='decompressText();'>DECOMPRESS</button><br>
     <textarea readonly id='decompressed_text'></textarea><br>
-    <script type='text/javascript' src='js/lzss_ui.js'></script>
+    <script type='text/javascript' src='js/lzss2_ui.js'></script>
     Check the checkbox to show the code. <input type='checkbox'>
 <div id='code'><xmp class='code'>
 // lzss.ts
