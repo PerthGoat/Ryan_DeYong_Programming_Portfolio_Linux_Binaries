@@ -155,6 +155,6 @@ function compressText() {
 function decompressText() {
     let text_entry = document.getElementById("compressed_text").value;
     //let decompressed_string : string = new DEFLATE({IN_STRING : "", IN_COMPRESSED : text_entry}).decompress();
-    let decompressed_string = btoa(DEFLATE2.DECOMPRESS(text_entry));
+    let decompressed_string = atob(DEFLATE2.DECOMPRESS(btoa(text_entry)));
     document.getElementById("decompressed_text").value = decompressed_string;
 }
