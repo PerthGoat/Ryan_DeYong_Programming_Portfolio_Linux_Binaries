@@ -142,7 +142,7 @@ DEFLATE2.MAX_WINDOW_SIZE = 4096;
 function compressText() {
     let text_entry = document.getElementById("text_entry").value;
     //let compressed_string : string = new DEFLATE({IN_STRING : text_entry, IN_COMPRESSED : ""}).compress();
-    let compressed_string = DEFLATE2.COMPRESS(text_entry);
+    let compressed_string = atob(DEFLATE2.COMPRESS(text_entry));
     document.getElementById("compressed_text").value = compressed_string;
     if (text_entry.length != 0) {
         document.getElementById("compression_ratio").innerText = (compressed_string.length / text_entry.length * 100).toPrecision(5) + "%";
@@ -155,6 +155,6 @@ function compressText() {
 function decompressText() {
     let text_entry = document.getElementById("compressed_text").value;
     //let decompressed_string : string = new DEFLATE({IN_STRING : "", IN_COMPRESSED : text_entry}).decompress();
-    let decompressed_string = DEFLATE2.DECOMPRESS(text_entry);
+    let decompressed_string = btoa(DEFLATE2.DECOMPRESS(text_entry));
     document.getElementById("decompressed_text").value = decompressed_string;
 }
