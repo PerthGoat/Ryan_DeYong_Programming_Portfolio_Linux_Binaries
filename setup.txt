@@ -1,0 +1,30 @@
+disable apache2 
+
+chkconfig httpd off
+
+install nginx headers
+yum install epel-release
+
+install nginx
+yum install nginx
+
+##install emacs##
+
+wget ftp://ftp.gnu.org/pub/gnu/emacs/emacs-26.3.tar.gz
+tar -xzvf "emacs-26.3.tar.gz"
+yum install gcc gcc-c++ make
+yum install ncurses-devel
+./configure --with-gnutls=no
+make
+make install
+ln -s /usr/local/bin/emacs-26.3 emacs
+
+
+#php for nginx#
+
+yum install php-cgi
+
+winscp
+
+
+yum install php-fpm
