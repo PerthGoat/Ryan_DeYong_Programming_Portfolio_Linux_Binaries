@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+
+<html lang='en'>
+    <head>
+        <style>
+            #code {display:none;}
+            :checked + #code {
+                display: block;
+            }
+            
+            #mycanvas {
+              border:1px solid black;
+              image-rendering: pixelated;
+            }
+        </style>
+    </head>
+    %%header.html%%
+    
+    <canvas id='mycanvas' width='400px' height='400px'></canvas><br>
+    <select id='imgselect'>
+      <option>waller</option>
+      <option>smile</option>
+      <option>duck</option>
+    </select><br>
+    <textarea readonly id='image_info'></textarea>->
+    <textarea readonly id='image_decompressed'></textarea>
+    
+    <script type='text/javascript' src='/resources/examples/js/textureManager/run.js'></script>
+    Check the checkbox to show the code. <input type='checkbox'>
+<div id='code'><xmp class='code'></xmp></div>
+    %%footer.html%%
+    %%typescript_highlight.html%%
+</html>
