@@ -238,10 +238,14 @@ let tm = new TextureManager();
 let scaling_factor_x = 25;
 let scaling_factor_y = 25;
 //tm.OpenTextureByName(texture_location, true);
-function delayedLoad(texture_location) {
+function delayedLoad(texture_location, try_n = 0) {
+    if (try_n > 10) {
+        return;
+    }
     let full_data = tm.GetTextureByName(texture_location).getTextureData();
     if (full_data === undefined) {
-        alert("Texture failed to load");
+        console.warn("Texture didn't load");
+        setTimeout(() => { delayedLoad(texture_location, try_n + 1); }, 100);
         return;
     }
     document.getElementById("image_info").value = TextureHouse[texture_location];
