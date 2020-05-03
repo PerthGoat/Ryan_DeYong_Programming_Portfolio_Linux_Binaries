@@ -27,7 +27,193 @@
     
     <script type='text/javascript' src='/resources/examples/js/textureManager/run.js'></script>
     Check the checkbox to show the code. <input type='checkbox'>
-<div id='code'><xmp class='code'></xmp></div>
+<div id='code'><xmp class='code'>
+TextureManager.ts
+
+/// <reference path="lzss2.ts" />
+
+let TextureHouse = {}; // holds references to textures loaded in by the Texture class
+
+// standard vector2
+class Vector2 {
+	constructor(
+		public x : number,
+		public y : number
+	) {}
+}
+
+/*
+ * The texture class handles holding textures, loading them, and processing their errors
+ */
+class Texture {
+	private loaded : boolean = false;
+	
+	// holds the loaded texture info
+	private dims : Vector2;
+	private texture_data : string;
+	
+	private raw_texture_variable : string;
+	private error_state : boolean = false;
+	
+	constructor(
+		private flocation : string,
+		loadOnCreate : boolean = false
+	) {
+		this.raw_texture_variable = this.flocation.split('.')[0];
+		if(loadOnCreate === true) {
+			this.loadT();
+		}
+	}
+	
+	private importScript(src : string) {
+		let script_tag = document.createElement("script");
+		script_tag.setAttribute("src", "/resources/examples/js/textureManager/" + src);
+		script_tag.onload = () => {
+			this.loaded = true;
+			
+			let raw_data : string = TextureHouse[this.raw_texture_variable]; // gets the raw texture data
+			
+			// processes it into the 2 variables
+			
+			let split_data : string[] = raw_data.split(':');
+			this.texture_data = DEFLATE2.DECOMPRESS(split_data[1]); // get the texture data and decompress it
+			
+			// get texture dimensions
+			let split_dims = split_data[0].split('_');
+			this.dims = new Vector2(parseInt(split_dims[0]), parseInt(split_dims[1]));
+		};
+		
+		script_tag.onerror = () => {
+			if(this.error_state === false) {
+				console.warn("Could NOT load a texture that was requested, retrying in 100ms || " + this.flocation);
+				this.error_state = true;
+				setTimeout(() => {this.importScript(src)}, 100);
+			} else {
+				console.error("Could NOT load a texture that was requested, retry did not work || " + this.flocation);
+			}
+		};
+		
+		document.head.appendChild(script_tag);
+	}
+	
+	public getTextureData() : any {
+		
+		if(this.error_state === true) {
+			console.warn("Trying to load an errored texture " + this.flocation);
+			return;
+		}
+		
+		if(this.loaded === false) {
+			console.log("Asked for non loaded texture || " + this.flocation);
+			return;
+		}
+		
+		if(this.texture_data === undefined) {
+			console.log("EMPTY TEXTURE " + this.flocation);
+			return;
+		}
+
+		return {data : this.texture_data, dimensions : this.dims};
+	}
+	
+	public getTextureTag() : string {
+		return this.raw_texture_variable;
+	}
+	
+	private loadT() : void {
+		if(this.loaded === true) {
+			alert("Load called on already loaded texture");
+			return;
+		}
+		
+		console.log("LOAD Texture " + this.flocation);
+		
+		this.importScript(this.flocation);
+	}
+}
+
+/*
+ * Easy creation and management of textures
+ */
+class TextureManager {
+	private textures : {} = {};
+	
+	constructor() { }
+	
+	public OpenTextureByName(name : string, openImmediate : boolean = false) : void {
+		if(this.textures[name] === undefined) {
+			let tex : Texture = new Texture(name + ".js", openImmediate);
+			this.textures[tex.getTextureTag()] = tex;
+		} else {
+			console.log("Texture already loaded || " + name);
+		}
+	}
+	
+	public GetTextureByName(name : string) : Texture {
+		return this.textures[name];
+	}
+}
+
+Run.ts
+
+/// <reference path="TextureManager.ts" />
+
+//let texture_location = "waller";
+
+let tm : TextureManager = new TextureManager();
+
+let scaling_factor_x : number = 25;
+let scaling_factor_y : number = 25;
+
+//tm.OpenTextureByName(texture_location, true);
+
+function delayedLoad(texture_location : string, try_n : number = 0) {
+  if(try_n > 10) {
+    return;
+  }
+	let full_data : any = tm.GetTextureByName(texture_location).getTextureData();
+	
+  if(full_data === undefined) {
+    console.warn("Texture didn't load");
+    setTimeout(() => {delayedLoad(texture_location, try_n + 1);}, 100);
+		return;
+	}
+  
+	(<HTMLInputElement>document.getElementById("image_info")).value = TextureHouse[texture_location];
+	(<HTMLInputElement>document.getElementById("image_decompressed")).value = full_data.data;
+	
+	let image_width = full_data.dimensions.x;
+	let image_height = full_data.dimensions.y;
+	
+	let canvas : HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("mycanvas");
+	let ctx : any = canvas.getContext("2d");
+	
+	for(let i = 0;i < full_data.data.length;i+=9) {
+		let ldata = full_data.data;
+		
+		let r = ldata[i] + ldata[i + 1] + ldata[i + 2];
+		let g = ldata[i + 3] + ldata[i + 4] + ldata[i + 5];
+		let b = ldata[i + 6] + ldata[i + 7] + ldata[i + 8];
+		
+		//console.log(r, g, b);
+		
+		ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+		
+		let x = (i / 9) % image_width;
+		let y = Math.floor((i / 9) / image_height);
+		
+    ctx.fillRect(x * scaling_factor_x, y * scaling_factor_y, 1 * scaling_factor_x, 1 * scaling_factor_y);
+	}
+}
+
+document.getElementById("imgselect").onchange = (e) => {
+	tm.OpenTextureByName((<HTMLInputElement>e.target).value, true);
+	setTimeout(() => {delayedLoad((<HTMLInputElement>e.target).value);}, 100);
+}
+
+tm.OpenTextureByName((<HTMLInputElement>document.getElementById("imgselect")).value, true);
+setTimeout(() => {delayedLoad((<HTMLInputElement>document.getElementById("imgselect")).value);}, 100);
+</xmp></div>
     %%footer.html%%
     %%typescript_highlight.html%%
 </html>
