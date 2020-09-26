@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html lang='en'>
+    <head>
+        <style>
+            #code {display:none;}
+            :checked + #code {
+                display: block;
+            }
+        </style>
+    </head>
+    %%header.html%%
+    <h4>This example synthesizes audio in pure JavaScript. Here it is playing the song "Yankee Doodle" with an overlaying mix tone at the beginning. It supports overlaying audio for mixing more interesting tracks as well.</h4>
+    
+    <button onclick='runSynth();'>Play song</button><br>
+
+    <script type='text/javascript' src='/resources/examples/js/runsynth.js'></script>
+    
+    Check the checkbox to show the code. <input type='checkbox'>
+<div id='code'><xmp class='code'>
+sound_synth.ts
+
+/*
+ * This library handles sound synthesis for in-game music and sound effects
+ * Handles many voices at once
+ */
+ 
+// global webaudio context for handling sound stuffs
+// causes a not allowed to start warning but it works fine
+let audioCtx = new (window.AudioContext)();
+
+/*
+ * Holds a note
+ * Has frequency, duration, and wait time before starting the next note
+ */
+class Note {
+	constructor(
+		public voice : number,
+		public duration : number,
+		public wait : number
+	) {}
+}
+
+enum NOTE_FREQ {
+	C = 130.82,
+	CS = 138.59,
+	D = 146.83,
+	DS = 155.56,
+	E = 164.81,
+	F = 174.61,
+	FS = 185,
+	G = 196,
+	GS = 207.65,
+	A = 220,
+	AS = 233.08,
+	B = 246.94
+}
+
+enum NOTE_DURATION {
+  QUARTER = 300,
+  DOT = 150,
+  HALF = 600,
+  WHOLE = 1200
+}
+
+/* sound synthesizer class
+ * holds sequences of notes and delays to be played back
+ * format is {voice: 100, duration: 100, wait: 50}
+ * this means it will play voice1 for 100ms and wait 50ms before starting the next note
+ * that means voices can be combined, so it will still be playing for 50ms when the next note starts
+ */
+class SoundSynthesizer {
+	private Notes : Note[]; // holds the objects containing the notes
+  private current_note : number = 0; // reference to the current note being played on this sound synth
+  
+	// constructor takes in an optional notes parameter
+	constructor(notes? : Note[]) {
+		
+		
+		if(notes == undefined) {
+			this.Notes = [];
+		} else {
+			this.Notes = notes;
+		}
+	}
+	
+	// adds a note to the end of the notes array
+	public AddNote(note : Note) {
+		this.Notes.push(note);
+	}
+	
+	// removes a note from the note array
+	public PopNote() {
+		this.Notes.pop();
+	}
+	
+	// recursively plays all of the notes one by one using timeouts
+	public Play(current_note : number = 0) {
+    if(this.current_note > current_note && this.current_note != this.Notes.length - 1) {
+      console.warn("Tried to play sound synthesizer, but it's already playing.");
+      return;
+    }
+    
+    this.current_note = current_note;
+    
+		let oscillator : any = audioCtx.createOscillator();
+		
+		oscillator.type = 'square';
+		oscillator.frequency.setValueAtTime(this.Notes[this.current_note].voice, audioCtx.currentTime); // value in hertz
+		oscillator.connect(audioCtx.destination);
+		oscillator.start();
+		setTimeout(() => {oscillator.stop();}, this.Notes[this.current_note].duration);
+		
+		if((this.current_note + 1) < this.Notes.length) {
+			setTimeout(() => {this.Play(this.current_note + 1)}, this.Notes[this.current_note].wait);
+		}
+	}
+}
+
+runsynth.ts
+
+/// <reference path="sound_synth.ts" />
+
+let sound_syn : SoundSynthesizer = new SoundSynthesizer();
+
+sound_syn.AddNote(new Note(NOTE_FREQ.D, NOTE_DURATION.WHOLE * 5, 10));
+
+// yankee doodle
+
+sound_syn.AddNote(new Note(NOTE_FREQ.G, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+sound_syn.AddNote(new Note(NOTE_FREQ.G, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+
+sound_syn.AddNote(new Note(NOTE_FREQ.A, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+sound_syn.AddNote(new Note(NOTE_FREQ.B, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+
+sound_syn.AddNote(new Note(NOTE_FREQ.G, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+sound_syn.AddNote(new Note(NOTE_FREQ.B, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+
+sound_syn.AddNote(new Note(NOTE_FREQ.A, NOTE_DURATION.HALF, NOTE_DURATION.HALF + NOTE_DURATION.DOT));
+sound_syn.AddNote(new Note(NOTE_FREQ.G, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+sound_syn.AddNote(new Note(NOTE_FREQ.G, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+sound_syn.AddNote(new Note(NOTE_FREQ.A, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+
+sound_syn.AddNote(new Note(NOTE_FREQ.B, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+
+sound_syn.AddNote(new Note(NOTE_FREQ.G, NOTE_DURATION.HALF, NOTE_DURATION.HALF + NOTE_DURATION.DOT));
+sound_syn.AddNote(new Note(NOTE_FREQ.FS, NOTE_DURATION.HALF, NOTE_DURATION.HALF + NOTE_DURATION.DOT));
+
+sound_syn.AddNote(new Note(NOTE_FREQ.G, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+sound_syn.AddNote(new Note(NOTE_FREQ.G, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+sound_syn.AddNote(new Note(NOTE_FREQ.A, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+sound_syn.AddNote(new Note(NOTE_FREQ.B, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+
+sound_syn.AddNote(new Note(NOTE_FREQ.C * 2, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+sound_syn.AddNote(new Note(NOTE_FREQ.B, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+sound_syn.AddNote(new Note(NOTE_FREQ.A, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+sound_syn.AddNote(new Note(NOTE_FREQ.G, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+sound_syn.AddNote(new Note(NOTE_FREQ.FS, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+
+sound_syn.AddNote(new Note(NOTE_FREQ.D, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+sound_syn.AddNote(new Note(NOTE_FREQ.E, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+
+sound_syn.AddNote(new Note(NOTE_FREQ.FS, NOTE_DURATION.QUARTER, NOTE_DURATION.QUARTER + NOTE_DURATION.DOT));
+
+sound_syn.AddNote(new Note(NOTE_FREQ.G, NOTE_DURATION.HALF, NOTE_DURATION.HALF + NOTE_DURATION.DOT));
+sound_syn.AddNote(new Note(NOTE_FREQ.G, NOTE_DURATION.HALF, NOTE_DURATION.HALF + NOTE_DURATION.DOT));
+
+function runSynth() {
+  sound_syn.Play();
+}
+</xmp></div>
+    %%footer.html%%
+    %%typescript_highlight.html%%
+</html>
