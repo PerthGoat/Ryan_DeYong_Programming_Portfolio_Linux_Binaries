@@ -1,36 +1,20 @@
-disable apache2 
+## disable apache2 ##
 
-chkconfig httpd off
+systemctl disable apache2
+service apache2 stop
 
-install nginx headers
-yum install epel-release
+## install nginx ##
+apt install nginx
 
-install nginx
-yum install nginx
-
-##install emacs##
-
-wget ftp://ftp.gnu.org/pub/gnu/emacs/emacs-26.3.tar.gz
-tar -xzvf "emacs-26.3.tar.gz"
-yum install gcc gcc-c++ make
-yum install ncurses-devel
-./configure --with-gnutls=no
-make
-make install
-ln -s /usr/local/bin/emacs-26.3 emacs
+[][] add in the config
 
 
-#php for nginx#
+## php for nginx ##
 
-yum install php-cgi
+apt install php-fpm
 
-winscp
+[[[ access server with winscp for file transfer
 
+## to renew the HTTPS cert ##
 
-yum install php-fpm
-
-## to renew the HTTPS cert
-
-service php-fpm start
-nginx
 certbot-auto to renew certificate (maybe add certonly)

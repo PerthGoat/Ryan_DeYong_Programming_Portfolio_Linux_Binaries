@@ -16,6 +16,12 @@
     </head>
     %%header.html%%
     
+    <div class='page_fill_body'>
+    
+    <div class='header_description_text'>
+      This is an idea I came up with for real-time texture loading. Textures are stored compressed in javascript files that are loaded at run-time and displayed. This allows active streaming of textures from the web server.
+    </div>
+    
     <canvas id='mycanvas' width='400px' height='400px'></canvas><br>
     <select id='imgselect'>
       <option>duck</option>
@@ -24,6 +30,8 @@
     </select><br>
     <textarea readonly id='image_info'></textarea>->
     <textarea readonly id='image_decompressed'></textarea>
+    
+    </div>
     
     <script type='text/javascript' src='/resources/examples/js/textureManager/run.js'></script>
     Check the checkbox to show the code. <input type='checkbox'>
