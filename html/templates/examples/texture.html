@@ -2,7 +2,7 @@
 
 <html lang='en'>
     <head>
-        <style>
+        <style type='text/css'>
             #code {display:none;}
             :checked + #code {
                 display: block;
@@ -11,6 +11,11 @@
             #mycanvas {
               border:1px solid black;
               image-rendering: pixelated;
+            }
+            
+            #image_info, #image_decompressed {
+              width:400px;
+              height:300px;
             }
         </style>
     </head>
@@ -21,6 +26,8 @@
     <div class='header_description_text'>
       This is an idea I came up with for real-time texture loading. Textures are stored compressed in javascript files that are loaded at run-time and displayed. This allows active streaming of textures from the web server.
     </div>
+    
+    <br>
     
     <canvas id='mycanvas' width='400px' height='400px'></canvas><br>
     <select id='imgselect'>
