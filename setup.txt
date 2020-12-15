@@ -28,3 +28,9 @@ winscp
 
 
 yum install php-fpm
+
+## to renew the HTTPS cert
+
+service php-fpm start
+nginx
+certbot-auto to renew certificate (maybe add certonly)
