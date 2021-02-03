@@ -6,9 +6,9 @@ $phrase_list = explode("\n", $phrases);
 $phrase_pick = rand(0, count($phrase_list) - 1);
 $phrase = $phrase_list[$phrase_pick];
 
-$page_ref = $_GET["_url"];
+$page_ref = $_GET["_url"] ?? "";
 
-if(!isset($page_ref) || $page_ref == "") {
+if($page_ref == "") {
   $page_ref = "/startpage";
 }
 
