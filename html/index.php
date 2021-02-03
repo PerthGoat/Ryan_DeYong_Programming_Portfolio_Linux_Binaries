@@ -8,7 +8,7 @@ $phrase = $phrase_list[$phrase_pick];
 
 $page_ref = $_GET["_url"];
 
-if($page_ref == "") {
+if(!isset($page_ref) || $page_ref == "") {
   $page_ref = "/startpage";
 }
 
