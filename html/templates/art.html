@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+
+<html lang='en'>
+    %%header.html%%
+    
+    <style type='text/css'>
+      .fineart {
+        max-width:1280px;
+      }
+    </style>
+    
+    <div class='content'>
+      <p>This is fine art I've made. It is in order by date added, where the newest is at the front.</p>
+      <button onclick='prev_art();'>Previous</button>
+      <button onclick='next_art();'>Next</button>
+      <hr>
+      <img class='fineart' src='/resources/jpeg/fineart/tree_and_stars.jpg'/>
+    </div>
+    
+    <script type='text/javascript'>
+      // add more to the bottom of this
+      // this allows an easy blog-like structure for the art, with lazy loading
+      
+      function prev_art() {
+        if(art_index <= 0) {
+          return;
+        }
+        art_index--;
+        img_elem.src = `/resources/jpeg/fineart/${list_of_art[art_index]}`;
+      }
+      
+      function next_art() {
+        if(art_index >= list_of_art.length - 1) {
+          return;
+        }
+        art_index++;
+        img_elem.src = `/resources/jpeg/fineart/${list_of_art[art_index]}`;
+      }
+      
+      let img_elem = document.getElementsByClassName('fineart')[0];
+      
+      let art_index = 0;
+      
+      let list_of_art = [
+        'tree_and_stars.jpg',
+        'tree.png',
+        'ship.png',
+        'abyss.png',
+        'boatonopenwater.png',
+        'fatalsun.png'
+      ];
+    </script>
+    %%footer.html%%
+</html>
