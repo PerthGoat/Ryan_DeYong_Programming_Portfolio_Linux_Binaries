@@ -1,5 +1,5 @@
 Now with HTTPS!
-Now with NGINX?
+Now with <a href='whynginx'>NGINX</a>?
 New examples!
 MIT > GPL
 LIBRE != BEER!

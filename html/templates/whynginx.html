@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+
+<html lang='en'>
+    %%header.html%%
+    
+    
+    <div class='content'>
+      <h3>The Move From PERL5 To C# Sockets</h3>
+      <p>For many years from about 2016-2018 this website ran on a custom web server written by me in PERL5. It had some issues because the perl modules it was using were outdated and the software was not the best written. As a result it was running into some crashes in response to some particularly unusual traffic and exploitation attempts, so I decided to move off the PERL5 server onto a custom web server I wrote in C# using C# sockets.</p>
+      <hr>
+      <h3>The Move From C# Sockets To NGINX</h3>
+      <p>Previously I was using cloud9 to deploy my C# application into a standalone mono binary for my Linux server. The issue was, cloud9 was bought by Amazon, and Amazon moved most of its free services behind a paywall. Instead of re-creating my deployment toolchain locally and less optimally I decided to switch to NGINX for the server hosting. To patch in the old templating methods I used custom PHP scripts written by me that emulate the functionality of the old C# and PERL5 servers. The switch to NGINX also allowed me to implement HTTPS into the website which looks good.</p>
+    </div>
+    %%footer.html%%
+</html>
