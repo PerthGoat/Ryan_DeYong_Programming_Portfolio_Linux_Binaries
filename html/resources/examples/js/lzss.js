@@ -1,36 +1,3 @@
-<!DOCTYPE html>
-
-<html lang='en'>
-    <head>
-        <style type='text/css'>
-            #code {display:none;}
-            :checked + #code {
-                display: block;
-            }
-            .exdesc {
-              white-space:pre-line;
-            }
-        </style>
-    </head>
-    %%header.html%%
-    <div class='pagebody'>
-      <p class='pageupdate'>UPDATED 6/4/2021 - I re-wrote the codebase for this to be much simpler and easier to read, and in addition fixed some bugs in my old DEFLATE implementation related to sliding window boundaries</p>
-      <hr>
-      <div class='exdesc'>
-      This is an implementation of the LZSS algorithm also known as DEFLATE.
-      Enter text in the top box, and click COMPRESS to compress it into the next box.
-      Click DECOMPRESS to decompress it into the bottom-most textbox.
-      </div>
-      <textarea placeholder='Enter text' id='in'></textarea><br>
-      <button onclick='compressButton();'>COMPRESS</button><br>
-      <textarea placeholder='Recommend not pasting text in here' id='comp'></textarea>
-      <span id='ratio'></span><br>
-      <button onclick='decompressButton();'>DECOMPRESS</button><br>
-      <textarea readonly id='decomp'></textarea><br>
-    </div>
-    <script type='text/javascript' src='/resources/examples/js/lzss.js'></script>
-    Check the checkbox to show the code. <input type='checkbox'>
-<div id='code'><xmp class='code'>
 const sliding_window_sz = 1024;
 
 function compressText(str) {
@@ -124,7 +91,3 @@ function decompressButton() {
   
   console.assert(decomp_text == document.getElementById('in').value, 'decompression from the compressed string failed');
 }
-</xmp></div>
-    %%footer.html%%
-    %%javascript_highlight.html%%
-</html>
