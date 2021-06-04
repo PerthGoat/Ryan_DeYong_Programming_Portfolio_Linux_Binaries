@@ -3,5 +3,4 @@ Now with <a href='whynginx'>NGINX</a>?
 New examples!
 MIT > GPL
 LIBRE != BEER!
-This site rocks
-Typescript Rox!
+New <a href='examples/deflate'>DEFLATE</a>
