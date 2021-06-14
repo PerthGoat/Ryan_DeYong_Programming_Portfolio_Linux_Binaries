@@ -28,16 +28,19 @@
             
             #screen {
               float:right;
-              width:380px;
-              height:380px;
+              width:512px;
+              height:512px;
               border:1px solid black;
               overflow:none;
+              background-color:white;
             }
             
             #screen #screenout {
               width:100%;
               height:100%;
               image-rendering:pixelated;
+              image-rendering:crisp-edges;
+              background-color:white;
             }
         </style>
     </head>
@@ -48,11 +51,11 @@
       </div>
       <div id='codearea'>
         <div id='screen'>
-          <canvas id='screenout' width='64px' height='64px'></canvas>
+          <canvas id='screenout' width='64' height='64'></canvas>
         </div>
         <div id='code-editor'>
         <textarea class='linenum' readonly></textarea>
-        <textarea class='codes'></textarea>
+        <textarea class='codes' spellcheck='false'></textarea>
         </div>
         <div id='result'>
         <textarea class='resbox' readonly></textarea>
@@ -62,6 +65,83 @@
       </div>
     </div>
     <script type='text/javascript' src='/resources/examples/js/newtcl.js'></script>
+    <script type='text/javascript'>
+      function renumber_box() {
+        c_lines.value = '';
+        let cc = c_text.value;
+        if(cc.indexOf('\n') == -1) {
+          c_lines.value = '1';
+          return;
+        }
+        let lines = cc.match(/\n/g).length + 1;
+        
+        let line_str = '';
+        
+        for(let i = 0;i < lines;i++) {
+          line_str += i + 1 + '\n';
+        }
+        
+        c_lines.value = line_str;
+        c_lines.scrollTop = c_text.scrollTop;
+      }
+      
+      function resize_box() {
+        c_lines.style.height = c_text.style.height;
+        c_res.style.width = (c_text.getBoundingClientRect().width + c_lines.getBoundingClientRect().width) + 'px';
+      }
+    
+      let code_editor = document.getElementById('code-editor');
+      
+      let c_lines = code_editor.getElementsByClassName('linenum')[0];
+      let c_text = code_editor.getElementsByClassName('codes')[0];
+      let c_res = document.getElementById('result').getElementsByClassName('resbox')[0];
+      
+      c_text.style.width = '1000px';
+      c_text.style.height = '500px';
+      
+      c_lines.style.width = '30px';
+      
+      c_res.style.height = '200px'
+      
+      resize_box();
+      renumber_box();
+      
+      c_text.addEventListener('change', () => {
+        renumber_box();
+      });
+      
+      c_text.addEventListener('keyup', () => {
+        renumber_box();
+      });
+      
+      c_text.addEventListener('keydown', (k) => {
+        if (k.key == 'Tab') {
+          k.preventDefault();
+          
+          let start = c_text.selectionStart;
+          let end = c_text.selectionStart;
+          
+          if(k.shiftKey == false) {
+            c_text.value = c_text.value.substring(0, start) + '  ' + c_text.value.substring(end);
+          
+            c_text.selectionStart = c_text.selectionEnd = start + 2;
+          } else {
+            c_text.value = c_text.value.substring(0, start - 2) + c_text.value.substring(end);
+            c_text.selectionStart = c_text.selectionEnd = start - 2;
+          }
+        }
+      });
+      
+      c_text.addEventListener('paste', () => {
+        renumber_box();
+      });
+      
+      c_text.addEventListener('scroll', () => {
+        renumber_box();
+      });
+      
+      new ResizeObserver(resize_box).observe(c_text);
+    </script>
     Check the checkbox to show the code. <input type='checkbox'>
 <div id='code'><xmp class='code'>
 
@@ -288,7 +368,7 @@ set oy 0
 
 while {1 1 =} {
   set key [keyin]
-  if {[expr $key 47 >] [expr $key 57 <] =} {
+  if {[expr $key 47 >] [expr $key 58 <] =} {
     drawLetterBlock [expr $key 48 -] $ox $oy
     set ox [expr $ox 5 +]
     if {$ox 64 >} {
