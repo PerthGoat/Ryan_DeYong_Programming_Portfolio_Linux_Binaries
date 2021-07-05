@@ -1,21 +1,4 @@
-
-// standard library for other stuff to use
-// preappended to every run
 let standard_library = `
-proc for {initCmd testExpr advanceCmd bodyScript} {
-  uplevel $initCmd
-  set testCmd [list expr $testExpr]
-  while {[uplevel $testCmd]} {
-    uplevel $bodyScript
-    uplevel $advanceCmd
-  }
-}
-
-proc incr {x} {
-  set listexpr [uplevel [list expr "\\$$x" 1 +]]
-  uplevel [list set $x $listexpr]
-}
-
 # compute POWER of x to the y
 proc pow {x y} {
   if {$y 0 =} {
@@ -23,17 +6,20 @@ proc pow {x y} {
   }
   
   set res $x
-  for {set i 1} {$i $y <} {incr i} {
+  set i 1
+  while {$i $y <} {
     
     set res [expr $res $x *]
+    incr i
   }
   return $res
 }
 
 proc factorial {x} {
   set fact 1
-  for {} {$x 1 >} {set x [expr $x 1 -]} {
+  while {$x 1 >} {
     set fact [expr $fact $x *]
+    set x [expr $x 1 -]
   }
 
   return $fact
@@ -48,7 +34,8 @@ proc sqrt {n} {
   
   set cness 0
   
-  for {set i 0} {$i 10 <} {incr i} {
+  set i 0
+  while {$i 10 <} {
     set cness [pow $est 2]
     # negative diff is too high
     # positive diff is too low
@@ -58,7 +45,7 @@ proc sqrt {n} {
     
     set est [expr $est $smalldiff +]
     
-    #puts $est
+    incr i
   }
   
   return $est
@@ -70,7 +57,9 @@ proc arctan {x} {
   set xsum 0
   set flip 0
   
-  for {set i 0} {$i 50 <} {incr i} { 
+  set i 0
+  
+  while {$i 50 <} {
     set pw [expr $i 2 *]
     set pw [expr $pw 1 +]
     
@@ -86,28 +75,11 @@ proc arctan {x} {
       set flip 0
     }
     
-    #puts $xd
+    incr i
   }
   return $xsum
 }
 
-
-# get PI
-proc PI {} {
-  set fr1 [expr 1 5 /]
-  set fr1 [arctan $fr1]
-  set fr1 [expr $fr1 4 *]
-  set fr2 [expr 1 239 /]
-  set fr2 [arctan $fr2]
-  
-  set pi4 [expr $fr1 $fr2 -]
-  
-  set pi [expr $pi4 4 *]
-  
-  return $pi
-}
-
-# override PI with a default val from wolfram
 proc PI {} {
   return 3.14159265358979323846264338327950288
 }
@@ -121,7 +93,8 @@ proc sin {x} {
   set xsum 0
   set flip 0
   
-  for {set i 0} {$i 10 <} {incr i} {
+  set i 0
+  while {$i 10 <} {
     set pw [expr $i 2 *]
     set pw [expr $pw 1 +]
     set fact [factorial $pw]
@@ -138,7 +111,7 @@ proc sin {x} {
       set flip 0
     }
     
-    #puts $xd
+    incr i
   }
   
   return $xsum
@@ -157,136 +130,69 @@ proc tan {x} {
   
   return [expr $s $c /]
 }
+
+proc incr {x} {
+  set listexpr [uplevel [list expr "\\$$x" 1 +]]
+  uplevel [list set $x $listexpr]
+}
+
+proc decr {x} {
+  set listexpr [uplevel [list expr "\\$$x" 1 -]]
+  uplevel [list set $x $listexpr]
+}
+
+proc trunc {n} {
+  return [expr $n [expr $n 1 %] -]
+}
+
+proc rand {state} {
+  set res [expr $state 48271 *]
+  set res [expr $res 65536 %]
+  return $res
+}
 `;
 
-let tcsr = `
-
-
-proc blinkon {offsetx offsety} {
-  set x 0
-  while {$x 4 <} {
-    set y 0
-    while {$y 5 <} {
-      putpixel [expr $x $offsetx +] [expr $y $offsety +] 0 0 0
-      incr y
-    }
-    incr x
-  }
-}
-
-proc blinkoff {offsetx offsety} {
-  set x 0
-  while {$x 4 <} {
-    set y 0
-    while {$y 5 <} {
-      putpixel [expr $x $offsetx +] [expr $y $offsety +] 255 255 255
-      incr y
-    }
-    incr x
-  }
-}
-
-proc blinkloop {offsetx offsety} {
-  blinkon $offsetx $offsety
-  sleep 100
-  blinkoff $offsetx $offsety
-  sleep 100
-}
-
-proc getBlockFromIndex {index} {
-  set block(0) "11111001100110011111"
-  set block(1) "00100110001000100111"
-  set block(2) "11110001111110001111"
-  set block(3) "11110001111100011111"
-  set block(4) "10011001111100010001"
-  set block(5) "11111000111100011111"
-  set block(6) "11111000111110011111"
-  set block(7) "11110001001001000100"
-  set block(8) "11111001111110011111"
-  set block(9) "11111001111100011111"
-  return $block($index)
-}
-
-proc drawLetterBlock {index offsetx offsety} {
-  set blk [getBlockFromIndex $index]
-  set y 0
-  for {set i 0} {$i 20 <} {incr i} {
-    set x [expr $i 4 %]
-    if {0 $x =} {
-      if {$i 0 =} {} {
-        incr y
-      }
-    }
-    set color [expr 255 [expr $blk($i) 255 *] -]
-    putpixel [expr $x $offsetx +] [expr $y $offsety +] $color $color $color
-  }
-}
-
-set ox 0
-set oy 0
-
-while {1 1 =} {
-  set key [keyin]
-  if {[expr $key 47 >] [expr $key 58 <] =} {
-    drawLetterBlock [expr $key 48 -] $ox $oy
-    set ox [expr $ox 5 +]
-    if {$ox 64 >} {
-      set ox 0
-      set oy [expr $oy 6 +]
-    }
-    sleep 100
-  } {
-    if {$key 69 =} {
-      set ox 0
-      set oy [expr $oy 6 +]
-    }
-    blinkloop $ox $oy
-  }
-}
-
-`;
-
+// holds a character that makes up a word, was originally
+// alphanumerics but became other characters
 function isAlphaNum(s) {
-  return s.match(/^[a-z0-9+-/*.=><()$#%_&]+$/i);
+  return s.match(/^[a-z0-9+-/*.=><()$#%_&!]+$/i);
 }
 
+// an async way to sleep in javascript without eating the browser thread
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// canvas for screen output
 let canvas = document.getElementById('screenout');
 let ctx = canvas.getContext('2d');
 
-let varstack = [];
-let procstack = {};
-let exec_level = 0;
-varstack.push({});
+// global variables
+let varstack = []; // the current variable stack
+let procstack = {}; // the current process list
+let exec_level = 0; // the level of the varstack in the current scope
+varstack.push({}); // add scope level 0
 
-// debugging
-let exec_name = ['MAIN']; // holds the current exec name for debugging
-
-// keypress stuff
+// holds the code of the last key pressed for keypress functionality
 let last_key_pressed = 0;
 
-function resetS() {
+function resetS() { // reset interpreter state
   varstack = [];
   procstack = {};
   exec_level = 0;
   varstack.push({});
-
-  // debugging
-  exec_name = ['MAIN']; // holds the current exec name for debugging
 }
 
-function deepcopy(a) {
+function deepcopy(a) { // handles deepcopy of arrays for passing to procedures so unwanted side effects don't happen with immutable variables
   return JSON.parse(JSON.stringify(a));
 }
 
+// handle substitutions of words
 async function runSub(w) {
-  if(w[0] == '{') {
+  if(w[0] == '{') { // brace substitution
     return w.substring(1, w.length - 1);
   }
-  if(w[0] == '$') {
+  if(w[0] == '$') { // variable substitution
     w = w.substring(1, w.length);
     if(w[w.length - 1] == ')') {
       let spl = w.split('(');
@@ -303,11 +209,11 @@ async function runSub(w) {
       return deepcopy(varstack[exec_level][w]);
     }
   }
-  if(w[0] == '[') {
+  if(w[0] == '[') { // bracket substitution
     w = w.substring(1, w.length - 1);
-    return await runTCL(w);
+    return await runTCL(w, 'BRACKET');
   }
-  if(w[0] == '"') {
+  if(w[0] == '"') { // quote sub, works different than typical substitution
     let ret_str = '';
     let sb_b = '';
     for(let i = 0;i < w.length;i++) {
@@ -347,24 +253,29 @@ async function runSub(w) {
     }
     return ret_str.substring(1, ret_str.length - 1);
   }
-  return w;
+  return w; // no sub can be performed
 }
 
+// debug function to log something to the chrome debug console in color
 function logColor(txt, color) {
   console.log(`%c${exec_level}>${txt}`, `background: ${color}`);
 }
 
-const debug = false;
+const debug = false; // should the runCmd print debug info?
 
+// handles definitions for all commands that need running
 async function runCmd(cl) {
   if (debug) logColor(cl, '#E66');
-  for(let i = 0;i < cl.length;i++) {
+  for(let i = 0;i < cl.length;i++) { // handle substitutions such as variable substitutions and command subs
     cl[i] = await runSub(cl[i]);
-    if(typeof(cl[i]) == 'string' && cl[i].startsWith('error')) {
+    if(typeof(cl[i]) == 'string' && cl[i].startsWith('error')) { // bubble errors
       return cl[i];
     }
   }
+  
   if (debug) logColor(cl, '#BBB');
+  
+  // if it's a process
   if (cl[0] in procstack) {
     let proc = procstack[cl[0]];
     let args = proc['procargs'].split(' ');
@@ -374,27 +285,29 @@ async function runCmd(cl) {
     if(cl.length - 1 < args.length) {
       return `error not enough args passed to proc ${cl[0]}`;
     }
-    exec_level++;
+    exec_level++; // advance to a nested lexical scope
     
-    exec_name.push(cl[0]);
-    varstack.push({});
-    //console.log(cl[1]);
-    for(let i = 0;i < args.length;i++) {
+    varstack.push({}); // new variable stack for this scope
+    for(let i = 0;i < args.length;i++) { // set each variable to the passed in arguments
       varstack[exec_level][args[i]] = cl[i + 1];
-      //runCmd(['set', '{' + args[i] + '}', '{' + cl[i + 1] + '}']);
     }
     
-    let proc_result = await runTCL(proc['procbody']);
+    // run the procedure and get the result
+    let proc_result = await runTCL(proc['procbody'], cl[0]);
     
+    // remove the old varstack
     varstack.pop();
-    exec_name.pop();
     
+    // step out of the lexical scope
     exec_level--;
-    //console.log(proc);
-    return (typeof(proc_result) == 'object' && 'return' in proc_result) ? proc_result['return'] : proc_result;;
+    
+    // return either a return statement or the result of the procedure
+    return (typeof(proc_result) == 'object' && 'return' in proc_result) ? proc_result['return'] : proc_result;
   }
+  // any other non special procedure command
   switch(cl[0]) {
-    case 'set':
+    case 'set': // set var [val]
+    // sets a variable to a value, including arrays
     if(cl[1][cl[1].length - 1] == ')') {
       let spl = cl[1].split('(');
       let name = spl[0];
@@ -407,15 +320,17 @@ async function runCmd(cl) {
       varstack[exec_level][cl[1]] = cl[2];
     }
     break;
-    case 'proc':
+    case 'proc': // proc name {args} {body}
+    // define a procedure
     procstack[cl[1]]= {procargs: cl[2], procbody: cl[3]};
-    //console.log(procstack);
     break;
-    case 'puts':
+    case 'puts': // puts value
+    // print a value to the result box
     logColor('\t\n\t' + cl[1], '#BAF');
     addToResultBox('\=> ' + cl[1]);
     break;
     case 'putpixel': // putpixel x y r g b
+    // print a pixel to the canvas of color rgb
     //logColor(`\t\n\t ${cl[1]} ${cl[2]} ${cl[3]} ${cl[4]} ${cl[5]}`, '#F00');
     let coordx = cl[1];
     let coordy = cl[2];
@@ -427,17 +342,19 @@ async function runCmd(cl) {
     ctx.fillRect(parseFloat(coordx), parseFloat(coordy), 1, 1);
     
     break;
-    case 'prntstack':
+    case 'prntstack': // DEBUG, prints the current variable stack
       console.log(varstack);
     break;
-    case 'putsdbg':
+    case 'putsdbg': // DEBUG, puts the memory representation of the current command
       console.log(cl);
     break;
     case 'fillcolor': // fillcolor x y w h r g b
+      // fill a rectangle at x, y with width and height with a color rgb
       ctx.fillStyle = `rgb(${cl[5]},${cl[6]},${cl[7]})`
       ctx.fillRect(parseFloat(cl[1]), parseFloat(cl[2]), parseFloat(cl[3]), parseFloat(cl[4]));
     break;
-    case 'asarray':
+    case 'asarray': // turns a list of arguments into an array representation
+      // useful for many things such as matrix ops
       let spl = cl[1].split(' ');
       let nw = {};
       for(let s = 0;s < spl.length;s++) {
@@ -445,35 +362,38 @@ async function runCmd(cl) {
       }
       return nw;
     break;
-    case 'sleep':
+    case 'sleep': // sleep for x amount of time
     await sleep(parseFloat(cl[1]));
     break;
-    case 'time':
+    case 'time': // get the current timing as a float with seconds and decimal subseconds
     return '' + (Date.now() / 1000)
     break;
-    case 'setpixsz':
+    case 'setpixsz': // set the canvas width and height
     canvas.width = cl[1];
     canvas.height = cl[2];
     break;
-    case 'keyin':
+    case 'keyin': // return the last key pressed and clear the buffer
       let kp = last_key_pressed;
       last_key_pressed = '';
       return '' + kp;
     break;
-    case 'if':
+    case 'if': // if {condition} {body} [{else} {body}]
+      // a classic if statement
       let ifstatement = cl[1];
       let ifbody = cl[2];
       let elsebody = cl[3];
       let res = '';
-      if(await runTCL('expr ' + ifstatement) == 'true') {
-        res = await runTCL(ifbody);
+      // run the if statement condition using expr
+      if(await runTCL('expr ' + ifstatement, 'IFSTATE') == 'true') {
+        res = await runTCL(ifbody, 'IFBODY'); // if true run the body
       } else if(elsebody != undefined) {
-        res = await runTCL(elsebody);
+        res = await runTCL(elsebody, 'ELSEBODY'); // if false run the alt body if it exists
       }
       
+      // handle return and break statements in procedures
       if(typeof(res) == 'object') {
         if('return' in res) {
-          return res['return'];
+          return res;
         } else if (res[0] == 'break') {
           return res;
         } else {
@@ -481,43 +401,47 @@ async function runCmd(cl) {
           return 'error got strange object in if result';
         }
       }
+      // bubble error if an error occurs
       if(res.startsWith('error')) return res;
     break;
-    case 'while':
+    case 'while': // while loop
       let whilestatement = cl[1];
       let whilebody = cl[2];
       //let loopkill = 0;
-      while(await runTCL('expr ' + whilestatement) == 'true') {
-        let res = await runTCL(whilebody);
-        if(typeof(res) == 'object' && 'return' in res) return res['return'];
+      // while the expr of the while statement is true
+      while(await runTCL('expr ' + whilestatement, 'WHILESTATE') == 'true') {
+        // then run the whilebody code
+        let res = await runTCL(whilebody, 'WHILEBODY');
+        // if a return or a break, kill the loop or procedure
+        if(typeof(res) == 'object' && 'return' in res) return res;
         if(typeof(res) == 'object' && res[0] == 'break') break;
-        if(res.startsWith('error')) return res;
+        if(res.startsWith('error')) return res; // if an error occurs bubble it up
         /*if(++loopkill == 200) {
           return 'error loop took too long';
         }*/
       }
     break;
-    case 'break':
+    case 'break': // standard non-returning break statement to break loops
       return ['break'];
     break;
-    case 'uplevel':
+    case 'uplevel': // access the variables in a procedure above the current lexical scope
     if (debug) logColor('UPLEVEL START', '#FF0');
     exec_level--;
-    let tc_res = await runTCL(cl[1]);
+    let tc_res = await runTCL(cl[1], 'UPLEVEL');
     exec_level++;
     //console.log(exec_name);
     if (debug) logColor('UPLEVEL END', '#FF0');
     return tc_res;
     break;
-    case 'return':
+    case 'return': // return a value from a procedure
       return {'return':cl[1]};
     break;
-    case 'list':
+    case 'list': // removes first argument and then returns a string separated by spaces
       let cll = cl.slice(1, cl.length);
       return cll.join(' ');
     break;
-    case 'expr':
-    let math_stack = [];
+    case 'expr': // run a math or boolean expression of some sort, uses reverse polish notation
+    let math_stack = []; // set up the math stack
     for(let i = 1;i < cl.length;i++) {
       if(!isNaN(parseFloat(cl[i]))) {
         math_stack.push(parseFloat(cl[i]));
@@ -580,7 +504,7 @@ async function runCmd(cl) {
     if(math_stack.length == 0) {
       return cl[1];
     }
-    return '' + math_stack[0];
+    return '' + math_stack[0]; // return the result as a string because it is friendly for the interpreter
     break;
     default:
     return `error unknown command ${cl[0]}`;
@@ -588,53 +512,71 @@ async function runCmd(cl) {
   return '';
 }
 
-async function runTCL(tcs) {
+// invoke the TCL interpreter
+async function runTCL(tcs, name) {
+  // if not running then break out of the interpreter loop
   if(!running) {
     return 'error execution halted'; // currently this sometimes misses if an if statement is running an expr
   }
   
+  // string builder to build up commands from characters
   let sb = '';
-
+  
+  // a list of the parsed command words
   let cmd_list = [];
   
+  // linecount of the program
   let mylinecount = 0;
   
+  // the last return value to return from the interpreter
   let lastval = '';
   
+  // for each char in the input
   for(let i = 0;i < tcs.length;i++) {
+    // if the end of a word or line
     if (tcs[i] == ' ' || tcs[i] == '\t' || tcs[i] == '\n' || tcs[i] == ';') {
+      // if the stringbuffer is not empty
       if(sb != '') {
-        cmd_list.push(sb);
+        cmd_list.push(sb); // then add it to the word list and empty the sb
         sb = '';
       }
+      // if the end of a command and there is words built up in the command list
       if((tcs[i] == '\n' || tcs[i] == ';') && cmd_list.length > 0) {
+        
+        // if the command is a comment then skip that line
         if(cmd_list[0][0] == '#') {
           cmd_list = [];
           mylinecount++;
           continue;
         }
+        // otherwise run the command and get the result
         let cmd_result = await runCmd(cmd_list);
+        // if the command has an error
         if(typeof(cmd_result) == 'string' && cmd_result.startsWith('error')) {
-          let error_build = `${cmd_result} in ${exec_name[exec_level]} on line ${mylinecount}`;
+          // print it and bubble the error back up
+          let error_build = `${cmd_result} in ${name} on line ${mylinecount}`;
           addToResultBox(error_build);
           
           return cmd_result;
         } else {
-          if(typeof(cmd_result) == 'object' && '(return' in cmd_result || cmd_result[0] == 'break') {
-            return cmd_result;
+          // otherwise, if there is a return statement or a break statement
+          if(typeof(cmd_result) == 'object' && 'return' in cmd_result || cmd_result[0] == 'break') {
+            return cmd_result; // immediately leave the interpreter
           }
-          lastval = cmd_result;
+          lastval = cmd_result; // otherwise just set the last value to the result of the command
         }
         //console.log(cmd_list);
-        cmd_list = [];
+        cmd_list = []; // empty the command list when done
       }
+      // for each newline advance the line count
       if(tcs[i] == '\n') mylinecount++;
       continue;
     }
     
-    if(isAlphaNum(tcs[i])) {
+    // if there is a value in the character list that is valid for a word
+    if(isAlphaNum(tcs[i])) { // build a word
       sb += tcs[i];
-    } else if(tcs[i] == '[') {
+    } else if(tcs[i] == '[') { // brackets are a special word
       sb += tcs[i];
       let watch = 1;
       i++;
@@ -655,7 +597,7 @@ async function runTCL(tcs) {
         return 'error start square bracket without end square bracket';
       }
       sb += tcs[i];
-    } else if(tcs[i] == '{') {
+    } else if(tcs[i] == '{') { // braces are a special word
       sb += tcs[i];
       let watch = 1;
       i++;
@@ -676,7 +618,7 @@ async function runTCL(tcs) {
         return 'error start curly bracket without end curly bracket';
       }
       sb += tcs[i];
-    } else if(tcs[i] == '"') {
+    } else if(tcs[i] == '"') { // quotes are a special word
       sb += tcs[i];
       i++;
       while(tcs[i] != '"' && i < tcs.length) {
@@ -688,21 +630,24 @@ async function runTCL(tcs) {
         return 'error start quote without end quote';
       }
       sb += tcs[i];
-    } else if(tcs[i] == '\\') {
+    } else if(tcs[i] == '\\') { // backslash escape
       sb += tcs[++i];
     }
-    else {
+    else { // if none of these match report an error that none match
       return `error invalid char ${tcs[i]}`;
       //break;
     }
     
   }
   
+  // after the loop,
+  // if there's anything left in the stringbuffer process it
   if(sb != '') {
     cmd_list.push(sb);
     sb = '';
   }
   
+  // run leftover command
   if(cmd_list.length > 0) {
     if(cmd_list[0][0] == '#') {
       cmd_list = [];
@@ -711,7 +656,7 @@ async function runTCL(tcs) {
     }
     let cmd_result = await runCmd(cmd_list);
     if(typeof(cmd_result) == 'string' && cmd_result.startsWith('error')) {
-      let error_build = `${cmd_result} in ${exec_name[exec_level]} on line ${mylinecount}`;
+      let error_build = `${cmd_result} in ${name} on line ${mylinecount}`;
       addToResultBox(error_build);
       
       return cmd_result;
@@ -720,29 +665,24 @@ async function runTCL(tcs) {
     }
   }
   
+  // return the last value
   return lastval;
 }
-document.getElementById('code-editor').getElementsByClassName('codes')[0].value = tcsr;
-/*
-let t0 = performance.now();
-let t_result = runTCL(tcsr);
-if(t_result.startsWith('error')) {
-  let error_build = `${t_result} in ${exec_name[exec_level]} on line ${current_line[exec_level]}`
-  for(let c = exec_level - 1;c >= 0;c--) {
-    error_build += `\n\tcalled from line ${current_line[c]} in ${exec_name[c]}`;
-  }
-  console.warn(error_build);
-}
 
-let t1 = performance.now();
-logColor(`execution finished in ${(t1 - t0) / 1000} seconds`, '#5EBA7D');*/
+// set the code editor to the default value initially
+document.getElementById('code-editor').getElementsByClassName('codes')[0].value = tcl_prog_snek;
 
+// add a log line to the result box
 function addToResultBox(s) {
   let c_res = document.getElementById('result').getElementsByClassName('resbox')[0];
   c_res.value += s + '\n';
   c_res.scrollTop = c_res.scrollHeight;
 }
 
+// running is used to prevent the button from starting again
+// stopped is used to track when the previous thread has actually exited the loops it is processing
+// aka running
+// this setup is needed to sync the asynchronous code
 let running = false;
 let stopped = true;
 async function runTclButton() {
@@ -754,21 +694,26 @@ async function runTclButton() {
     setTimeout(runTclButton, 100);
     return;
   }
-  
+
+  // preset the canvas width and height to 64x64
+  // this preset can be changed later by TCL
   canvas.width = 64;
   canvas.height = 64;
   
+  // clear the canvas to solid white by default
   ctx.fillStyle = `rgb(255,255,255)`;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
+  // now the TCL interpreter is running but not stopped
   running = true;
   stopped = false;
+  // get the code in the code editor
   let code = document.getElementById('code-editor').getElementsByClassName('codes')[0].value;
   addToResultBox('START');
   let t0 = performance.now();
-  resetS();
-  await runTCL(standard_library);
-  let t_result = await runTCL(code);
+  resetS(); // reset the interpreter
+  await runTCL(standard_library, 'STD'); // parse the standard library before running the code
+  let t_result = await runTCL(code, 'MAIN');
   
   let t1 = performance.now();
   logColor(`execution finished in ${(t1 - t0) / 1000} seconds`, '#5EBA7D');
@@ -777,10 +722,17 @@ async function runTclButton() {
   stopped = true;
 }
 
-function stopTCL() {
-  running = false;
-}
-
+// holds the last key pressed anywhere on the page
+// to enable it to be easily used by the interpreter
 window.onkeypress = (e) => {
   last_key_pressed = e.key.charCodeAt(0);
 };
+
+document.getElementById('pbox').onchange = (e) => {
+  running = false;
+  if(e.target.value == 'SNAKE') {
+    document.getElementById('code-editor').getElementsByClassName('codes')[0].value = tcl_prog_snek;
+  } else {
+    document.getElementById('code-editor').getElementsByClassName('codes')[0].value = tcl_prog_cube;
+  }
+}
