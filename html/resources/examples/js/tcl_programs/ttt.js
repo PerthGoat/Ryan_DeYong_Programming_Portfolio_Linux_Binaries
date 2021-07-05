@@ -182,8 +182,7 @@ proc multiply_cube {world cube} {
     set r($i) [matrix_multiply_dot $world $cube($i)]
     incr i
   }
-  #prntstack
-  #while {1 1 =} {sleep 100}
+  
   return $r
 }
 
@@ -193,11 +192,6 @@ set worldmatrix [createMatrix [asarray "1 0 0 0"] [asarray "0 1 0 0"] [asarray "
 
 set worldmatrix [translateMat $worldmatrix 32 32 0]
 set worldmatrix [scaleMat $worldmatrix 16 16 16]
-#set worldmatrix [rotateMat $worldmatrix 1 1 0 1]
-
-#puts $mult(0)
-
-#puts [vec_multiply [asarray "1 2 3 4"] [asarray "4 5 6 7"]]
 
 set orig_cube(0) [asarray "-1 -1 1 1"]
 set orig_cube(1) [asarray "1 -1 1 1"]
@@ -211,17 +205,11 @@ set orig_cube(7) [asarray "-1 1 -1 1"]
 
 set new_cube [multiply_cube $worldmatrix $orig_cube]
 
-#putsdbg $orig_cube
-
-drawRect $new_cube(0) $new_cube(1) $new_cube(2) $new_cube(3)
-
-#set worldmatrix [rotateMat $worldmatrix 0 1 0 0.5]
-
 set j 0
 while {1 1 =} {
   set worldmatrix [rotateMat $worldmatrix 0 0 0 0.1]
   set key [keyin]
-#  puts $key
+  
   if {$key 100 =} {
     set worldmatrix [rotateMat $worldmatrix 0 1 0 0.1]
   }
