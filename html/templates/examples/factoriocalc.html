@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+
+<html lang='en'>
+    <head>
+        <style type='text/css'>
+            #code {display:none;}
+            :checked + #code {
+                display: block;
+            }
+            .exdesc {
+              white-space:pre-line;
+            }
+            
+            #code-editor .linenum {
+              overflow:hidden;
+              resize:none;
+              text-align:right;
+              background-color:lightgray;
+            }
+
+            #codearea {
+              display:inline-block;
+            }
+            #codearea * {
+              font-family: Arial, Helvetica, sans-serif;
+            }
+            #codearea .factoriocalculatorUI {
+              text-align: center;
+              float:left;
+            }
+            #codearea select {
+              width:350px;
+            }
+            #codearea .base64itemliststring {
+              width:200px;
+            }
+            #codearea .factoriocalculatorresults {
+              float:left;
+              margin-left:20px;
+            }
+            #codearea .factorioresultstable {
+              border:1px solid black;
+              border-collapse: collapse;
+            }
+            #codearea .factorioresultstable th {
+              border:1px solid black;
+              border-collapse: collapse;
+              padding:4px;
+            }
+            #codearea .factorioresultstable tr {
+              border:1px solid black;
+              border-collapse: collapse;
+            }
+            #codearea .factorioresultstable td {
+              border:1px solid black;
+              border-collapse: collapse;
+              padding:4px;
+            }
+            #codearea .factoriocalculatorassemblymappings {
+              float:left;
+              margin-left:20px;
+            }
+            #codearea .assemblyitem {
+              width:185px;
+              margin-right:none;
+              padding-right:none;
+              float:left;
+            }
+            #codearea .assemblyitem_mapping {
+              width:165px;
+              margin-left:none;
+              padding-left:none;
+              float:left;
+            }
+            #codearea .assemblyitems {
+              width:185px;
+              float:left;
+            }
+            #codearea .assemblymachinevariants {
+              width:165px;
+              float:left;
+            }
+            #codearea .assemblyitem_mapping[disabled] {
+              color:#000;
+              opacity:1;
+            }
+            #codearea .assemblyitem_mapping[disabled] option {
+              color:#000;
+            }
+            
+        </style>
+    </head>
+    %%header.html%%
+    <div class='pagebody'>
+      <div class='exdesc'>
+        <p>
+          This is a calculator I made to calculate how many supporting machines you would need 
+          to support creating a particular item at the fastest possible speed.
+        </p>
+      </div><br>
+      <div id='codearea'>
+        <div class="factoriocalculatorUI">
+          <select size="12" class="factorioitemview">
+          </select>
+          <br>
+          <select class="factorioselectitem">
+          </select>
+          <br>
+          <button onclick="mainapp.AddItemToList()">Add Item</button>
+          <button onclick="mainapp.RemoveItemFromList()">Remove Item</button>
+          <button onclick="mainapp.ClearList()">Clear</button>
+          <button onclick="mainapp.Calculate()">Calculate</button>
+          <br>
+          <label for=".base64itemliststring">Base64 String</label>
+          <button onclick="mainapp.SelectBase64String()">Select All</button>
+          <button onclick="mainapp.LoadSavedB64()">Load</button>
+          <br>
+          <input type="text" class="base64itemliststring" />
+        </div>
+        <div class="factoriocalculatorassemblymappings">
+          <select size="12" class="assemblyitem">
+          </select>
+          <select size="12" class="assemblyitem_mapping" disabled>
+          </select>
+          <br>
+          <select class="assemblyitems">
+          </select>
+          <select class="assemblymachinevariants">
+          </select>
+          <br>
+          <button onclick="mainapp.UpdateMapping()">Update Mapping</button>
+        </div>
+        <div class="factoriocalculatorresults">
+          <table class="factorioresultstable">
+            <thead>
+              <th>Machine Name</th>
+              <th>Item Name</th>
+              <th>Machine Qty.</th>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><br>
+    <script type='text/javascript' src='/resources/examples/js/compression.js'></script>
+    <script type='text/javascript' src='/resources/examples/js/factoriocalc.js'></script>
+    <div id="checkbox-blob">
+    Check the checkbox to show the code. <input type='checkbox' />
+<div id='code'><xmp class='code'>
+  class CraftingNode {
+    constructor(p={}) {
+        this.itemname = p.itemname,
+        this.itemqtys = p.itemqtys,
+        this.machinename = p.machinename,
+        this.neededmachines = p.neededmachines,
+        this.craftingtime = p.craftingtime,
+        this.nextnodes = p.nextnodes
+    }
+}
+
+class FactorioCalculator {
+    constructor() {
+        // format is:
+        // machine name => machine recipe dict => recipe item => recipe resource requirement dict, containing items needed per second, and production per second
+        this.recipes = {
+        'Stone Furnace':
+        {
+          'Iron Plate': 
+          {
+            'Iron Ore': 1,
+            'Coal': 0.0225,
+            'ProductionSeconds': 1/0.3125
+          },
+          'Copper Plate':
+          {
+            'Copper Ore': 1,
+            'Coal': 0.0225,
+            'ProductionSeconds': 1/0.3125
+          },
+          'Steel Plate':
+          {
+            'Iron Plate': 5,
+            'Coal': 0.0225,
+            'ProductionSeconds': 1/0.0625
+          }
+        },
+        'Mining Drill': 
+        {
+          'Iron Ore':
+          {
+            'ProductionSeconds': 2
+          },
+          'Coal':
+          {
+            'ProductionSeconds': 2
+          },
+          'Copper Ore':
+          {
+            'ProductionSeconds': 2
+          }
+        },
+        'Assembling Machine': // 50% crafting speed
+        {
+          'Iron gear wheel': 
+          {
+            'Iron Plate': 2,
+            'ProductionSeconds': 0.5
+          },
+          'Gun Turret':
+          {
+            'Copper Plate': 10,
+            'Iron gear wheel': 10,
+            'Iron Plate': 20,
+            'ProductionSeconds': 8
+          },
+          'Firearm magazine':
+          {
+            'Iron Plate': 4,
+            'ProductionSeconds': 1
+          },
+          'Piercing rounds magazine':
+          {
+            'Copper Plate': 5,
+            'Firearm magazine': 1,
+            'Steel Plate': 1,
+            'ProductionSeconds': 3
+          },
+          'Automation science pack':
+          {
+            'Copper Plate': 1,
+            'Iron gear wheel': 1,
+            'ProductionSeconds': 5
+          },
+          'Transport belt':
+          {
+            'Iron gear wheel': 1,
+            'Iron Plate': 1,
+            'ProductionSeconds': 0.5/2
+          },
+          'Electronic circuit':
+          {
+            'Copper cable': 3,
+            'Iron Plate': 1,
+            'ProductionSeconds': 0.5
+          },
+          'Copper cable': 
+          {
+            'Copper Plate': 1,
+            'ProductionSeconds': 0.5/2
+          },
+          'Inserter':
+          {
+            'Electronic circuit': 1,
+            'Iron gear wheel': 1,
+            'Iron Plate': 1,
+            'ProductionSeconds': 0.5
+          },
+          'Logistic science pack':
+          {
+            'Transport belt': 1,
+            'Inserter': 1,
+            'ProductionSeconds': 6
+          },
+          'MachineVariantMultiplier': // for the assembling machines that sometimes craft faster or slower depending on the version
+          { 
+            1: 0.5,
+            2: 0.75
+          }
+        }
+        };
+    }
+
+    TotalUpRecipeTreeMachines(recipetreenode) {
+        let machinedict = {};
+        machinedict[recipetreenode.machinename] = {};
+        machinedict[recipetreenode.machinename][recipetreenode.itemname] = recipetreenode.neededmachines;
+
+        for(let node of recipetreenode.nextnodes) {
+            let res = this.TotalUpRecipeTreeMachines(node);
+            for(let mdict_entry of Object.keys(res)) {
+                for (let item of Object.keys(res[mdict_entry])) {
+                    if(!Object.keys(machinedict).includes(mdict_entry)) {
+                        machinedict[mdict_entry] = {};
+                    }
+
+                    if(!Object.keys(machinedict[mdict_entry]).includes(item)) {
+                        machinedict[mdict_entry][item] = res[mdict_entry][item];
+                    }
+                    else {
+                        machinedict[mdict_entry][item] += res[mdict_entry][item];
+                    }
+                }
+            }
+        }
+
+        return machinedict;
+    }
+
+    BalanceRecipeTreeNode(recipetreenode) {
+        let parent_craft_time = recipetreenode.craftingtime;
+        for(let node of recipetreenode.nextnodes) {
+            node.craftingtime *= recipetreenode.itemqtys.find(x => x[0] == node.itemname)[1];
+
+            for(let item of node.itemqtys) {
+                item[1] *= recipetreenode.itemqtys.find(x => x[0] == node.itemname)[1];
+            }
+
+            let machines_for_total_craft_time = node.craftingtime / parent_craft_time;
+
+            node.neededmachines = machines_for_total_craft_time * recipetreenode.neededmachines;
+
+            this.BalanceRecipeTreeNode(node)
+        }
+    }
+
+    BuildRecipeTree(goalitem, variant_mappings, qty=1) {
+        let recipe = '';
+        for(let arecipe of Object.keys(this.recipes)) {
+            if (Object.keys(this.recipes[arecipe]).includes(goalitem)) {
+                console.log(`Using ${arecipe} as the recipe for ${goalitem}`);
+                recipe = arecipe;
+                break;
+            }
+        }
+
+        let recipecalculationnode = new CraftingNode({
+                                                    itemname: goalitem,
+                                                    itemqtys: Object.keys(this.recipes[recipe][goalitem]).filter((x) => x != 'ProductionSeconds').map(x => [x, this.recipes[recipe][goalitem][x]]),
+                                                    machinename: recipe,
+                                                    neededmachines: qty,
+                                                    craftingtime: this.recipes[recipe][goalitem]['ProductionSeconds'],
+                                                    nextnodes: []
+                                                    });
+        
+        if (Object.keys(variant_mappings).includes(goalitem)) {
+            recipecalculationnode.craftingtime /= this.recipes[recipe]['MachineVariantMultiplier'][variant_mappings[goalitem]]
+            recipecalculationnode.machinename += ' ' + variant_mappings[goalitem];
+        }
+
+        for(let recipeitem of Object.keys(this.recipes[recipe][goalitem])) {
+            if (recipeitem == 'ProductionSeconds')
+                continue;
+            
+            recipecalculationnode.nextnodes = recipecalculationnode.nextnodes.concat([this.BuildRecipeTree(recipeitem, variant_mappings)]);
+        }
+
+        return recipecalculationnode
+    }
+}
+
+class MainApplication {
+    constructor(itemlistbox, itemcombobox, factorioassemblymappings, base64stringbox, assemblymachinevariants, assemblyitem, assemblyitem_mapping, results_table) {
+        this.itemlistbox = itemlistbox;
+        this.itemcombobox = itemcombobox;
+        this.factorioassemblymappings = factorioassemblymappings;
+        this.base64stringbox = base64stringbox
+        this.assemblymachinevariants = assemblymachinevariants;
+        this.assemblyitem = assemblyitem;
+        this.assemblyitem_mapping = assemblyitem_mapping;
+        this.results_table = results_table;
+
+        this.assemblyitem.addEventListener('change', () => {
+            let selected_item_text = this.assemblyitem.options[this.assemblyitem.selectedIndex].value;
+            for(let i = 0;i < this.factorioassemblymappings.options.length;i++)  {
+                let item = this.factorioassemblymappings.options[i];
+                if (item.value == selected_item_text) {
+                    this.factorioassemblymappings.selectedIndex = i;
+                    let selectedassemblymachine = this.assemblyitem_mapping.options[i].value;
+                    for(let j = 0;j < this.assemblymachinevariants.options.length;j++) {
+                        let variant = this.assemblymachinevariants.options[j];
+                        if (variant.value == selectedassemblymachine) {
+                            this.assemblymachinevariants.selectedIndex = j;
+                        }
+                    }
+                    break;
+                }
+            }
+        });
+
+        this.factorioassemblymappings.addEventListener('change', () => {
+            let selected_item_text = this.factorioassemblymappings.options[this.factorioassemblymappings.selectedIndex].value;
+            for(let i = 0;i < this.assemblyitem.options.length;i++) {
+                let item = this.assemblyitem.options[i];
+
+                if (item.value == selected_item_text) {
+                    this.assemblyitem.focus();
+                    this.assemblyitem.selectedIndex = i;
+
+                    let selectedassemblymachine = this.assemblyitem_mapping.options[i].value;
+                    for(let j = 0;j < this.assemblymachinevariants.options.length;j++) {
+                        let variant = this.assemblymachinevariants.options[j];
+                        if (variant.value == selectedassemblymachine) {
+                            this.assemblymachinevariants.selectedIndex = j;
+                        }
+                    }
+                    break;
+                }
+            }
+        });
+
+        this.factoriorecipecalc = new FactorioCalculator();
+
+        this.DoInitialPopulate();
+    }
+
+    DoInitialPopulate() {
+        let recipes = this.factoriorecipecalc.recipes;
+
+        for (let recipe of Object.keys(recipes)) {
+            for (let item of Object.keys(recipes[recipe])) {
+                // checking length > 1 stops non craftables from being pulled in
+                if (Object.keys(recipes[recipe][item]).length > 1 && item != 'MachineVariantMultiplier') {
+                    let newselectitem = document.createElement('option');
+                    newselectitem.text = item;
+                    this.itemcombobox.appendChild(newselectitem);
+
+                    if (recipe == 'Assembling Machine') {
+                        this.factorioassemblymappings.appendChild(newselectitem.cloneNode(true));
+                        this.assemblyitem.appendChild(newselectitem.cloneNode(true));
+                        
+                        let newasm1 = document.createElement('option');
+                        newasm1.text = 'Assembling Machine 1';
+                        this.assemblyitem_mapping.appendChild(newasm1);
+                    }
+                }
+
+                if (item == 'MachineVariantMultiplier') {
+                    for (let variant of Object.keys(recipes[recipe][item])) {
+                        let newvariantitem = document.createElement('option');
+                        newvariantitem.text = 'Assembling Machine ' + variant;
+                        this.assemblymachinevariants.appendChild(newvariantitem);
+                    }
+                }
+            }
+        }
+
+        this.assemblyitem.selectedIndex = 0;
+        this.#CalculateBase64();
+    }
+
+    #CalculateBase64() {
+        let alloptions = Array.from(this.itemlistbox.options);
+
+        let savearray = [];
+        let assembly_machine_mappings = Array.from(this.assemblyitem.options).map((e, i) => {
+            return [e.value, this.assemblyitem_mapping.options[i].value]
+        });
+
+
+        savearray[0] = alloptions.map((opt) => opt.value);
+        savearray[1] = assembly_machine_mappings;
+
+        let fulloptionjson = JSON.stringify(savearray);
+
+        // I compress it because why not, it makes it way smaller
+        let compressed_json = CompressText(escape(fulloptionjson));
+        let base64_string = btoa(compressed_json);
+
+        this.base64stringbox.value = base64_string;
+        //console.log(`Compression Ratio is ${base64_string.length / btoa(fulloptionjson).length}`);
+    }
+    #CombineTwoCraftTrees(c1, c2) {
+        for(let node2 in c2.nextnodes) {
+            if(c1.nextnodes.find((x) => x.itemname == node2.itemname) != undefined) {
+                this.#CombineTwoCraftTrees(c1.nextnodes[node2], c2.nextnodes[node2]);
+            } else {
+                c1.nextnodes.push(c2.nextnodes[node2]);
+            }
+        }
+
+        c1.neededmachines += c2.neededmachines;
+    }
+    // actual calculation happens here
+    Calculate() {
+        // assembly machine mappings
+        let variant_mappings = {};
+        for(let i = 0;i < this.assemblyitem.options.length;i++) {
+            variant_mappings[this.assemblyitem.options[i].value] = parseInt(this.assemblyitem_mapping.options[i].value.replace('Assembling Machine ', ''));
+        }
+        // get list of things to craft
+        let craft_list = Array.from(this.itemlistbox.options).map((opt) => opt.value);
+        let rtree = undefined;
+        for(let craftitem of craft_list) {
+            let new_rtree = this.factoriorecipecalc.BuildRecipeTree(craftitem, variant_mappings);
+            this.factoriorecipecalc.BalanceRecipeTreeNode(new_rtree);
+            if (rtree != undefined) {
+                this.#CombineTwoCraftTrees(rtree, new_rtree);
+            } else {
+                rtree = new_rtree;
+            }
+        }
+
+        let totaled = this.factoriorecipecalc.TotalUpRecipeTreeMachines(rtree);
+
+        for(let i of Object.keys(totaled)) {
+            for(let j of Object.keys(totaled[i])) {
+                totaled[i][j] = Math.ceil(totaled[i][j])
+            }
+        }
+
+        // now display totaled in the table
+        this.results_table.innerHTML = '';
+        for(let machine of Object.keys(totaled).sort()) {
+            for (let item of Object.keys(totaled[machine])) {
+                let tablerow = document.createElement('tr');
+                let machinedata = document.createElement('td');
+                machinedata.textContent = machine;
+                let itemdata = document.createElement('td');
+                itemdata.textContent = item;
+                let machineqty = document.createElement('td');
+                machineqty.textContent = totaled[machine][item];
+
+                tablerow.appendChild(machinedata);
+                tablerow.appendChild(itemdata);
+                tablerow.appendChild(machineqty);
+                
+                this.results_table.appendChild(tablerow);
+            }
+        }
+    }
+    
+    LoadSavedB64() {
+        let base64_string = this.base64stringbox.value;
+
+        let jsonifiedjson = undefined;
+        try {
+            let decompressed_json = unescape(DecompressText(atob(base64_string)));
+            jsonifiedjson = JSON.parse(decompressed_json);
+        } catch(e) {
+            alert('Bad JSON String!');
+            return;
+        }
+
+        this.ClearList();
+
+        for(let opt of jsonifiedjson[0]) {
+            let loadeditem = document.createElement('option');
+            loadeditem.text = opt;
+            this.itemlistbox.appendChild(loadeditem);
+        }
+
+        for(let savedmapping of jsonifiedjson[1]) {
+            for (let i = 0;i < this.assemblyitem.options.length;i++) {
+                if (this.assemblyitem.options[i].value == savedmapping[0]) {
+                    this.assemblyitem_mapping.options[i].text = savedmapping[1];
+                    break;
+                }
+            }
+        }
+
+
+    }
+
+    UpdateMapping() {
+        let new_assembly_variant = this.assemblymachinevariants.options[this.assemblymachinevariants.selectedIndex].value;
+        this.assemblyitem_mapping.options[this.assemblyitem.selectedIndex].text = new_assembly_variant;
+
+        this.#CalculateBase64();
+    }
+
+    AddItemToList() {
+        let newselectopt = document.createElement('option');
+        newselectopt.text = this.itemcombobox.value;
+        this.itemlistbox.appendChild(newselectopt);
+
+        this.#CalculateBase64();
+    }
+    
+    RemoveItemFromList() {
+        for(let opt of Array.from(this.itemlistbox.selectedOptions)) {
+            this.itemlistbox.removeChild(opt);
+        }
+        this.#CalculateBase64();
+    }
+
+    ClearList() {
+        for(let opt of Array.from(this.itemlistbox.options)) {
+            this.itemlistbox.removeChild(opt);
+        }
+        this.base64stringbox.value = '';
+    }
+    
+    SelectBase64String() {
+        this.base64stringbox.focus();
+        this.base64stringbox.setSelectionRange(0, this.base64stringbox.value.length, "forward");
+    }
+}
+
+var mainapp = undefined;
+function MainFunc(e) {
+    let itemlistbox = document.getElementsByClassName('factorioitemview')[0];
+    let itemcombobox = document.getElementsByClassName('factorioselectitem')[0];
+
+    let factorioassemblymappings = document.getElementsByClassName('assemblyitems')[0];
+    let assemblymachinevariants = document.getElementsByClassName('assemblymachinevariants')[0]
+
+    let base64stringbox = document.getElementsByClassName('base64itemliststring')[0];
+    
+    let assemblyitem = document.getElementsByClassName('assemblyitem')[0];
+    let assemblyitem_mapping = document.getElementsByClassName('assemblyitem_mapping')[0];
+
+    let results_table = document.getElementsByClassName('factorioresultstable')[0].getElementsByTagName('tbody')[0];
+
+    mainapp = new MainApplication(itemlistbox, itemcombobox, factorioassemblymappings, base64stringbox, assemblymachinevariants, assemblyitem, assemblyitem_mapping, results_table);
+}
+
+MainFunc();
+</xmp></div>
+</div>
+    %%footer.html%%
+    %%javascript_highlight.html%%
+</html>
